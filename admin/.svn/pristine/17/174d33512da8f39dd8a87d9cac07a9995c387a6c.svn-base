@@ -1,0 +1,47 @@
+/**
+ * Date:2018年1月17日
+ * Description:
+ * Author:QinMing
+ *
+ */
+package com.css.mgr.admin.srv.app.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.css.mgr.admin.dao.pojo.app.SApp;
+import com.css.mgr.admin.dao.repository.SAppDao;
+import com.css.mgr.admin.srv.app.IAppService;
+
+/**
+ * Date:2018年1月17日
+ * Description:
+ * Author:Hjw
+ */
+@Service("appService")
+@Transactional
+public class AppServiceImpl implements IAppService {
+	@Autowired
+	private SAppDao sAppDao;
+	 @Transactional(readOnly=true)
+	public int add() {
+		return this.sAppDao.add();
+	}
+	 @Transactional(readOnly=true)
+	public int del(String id) {
+		return this.sAppDao.del(id);
+	}
+	 @Transactional(readOnly=true)
+	public int update(String id) {
+		return this.sAppDao.update(id);
+	}
+	 @Transactional(readOnly=true)
+	public List<SApp> getSAppList() {
+		return this.sAppDao.getSAppList();
+	}
+
+	
+}

@@ -1,0 +1,158 @@
+/**
+ * Copyrigth(c) Css Team
+ * All rights reserved
+ */
+package com.css.mgr.admin.post;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.css.App;
+import com.css.mgr.admin.dao.repository.SPostDao;
+import com.css.mgr.base.dao.pojo.SPost;
+
+/**
+ * @author wangtianwen 2018年2月5日
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = App.class) // 指定spring-boot的启动类
+public class PostTest {
+	private static Logger logger = LoggerFactory.getLogger(PostTest.class);
+	@Autowired
+	private SPostDao sPostDao;
+
+	@Test
+	public void findAllTest() {
+		List<SPost> posts = sPostDao.findAll();
+		logger.info("posts:"+posts.size());
+	}
+
+	/**
+	 * 单表 分页  select * from s_post where rank="1" LIMIT 2,2
+	 */
+	@Test
+	public void findByRankTest() {
+		String rank = "1";
+		Pageable pageable = new PageRequest(2, 2);
+		Page<SPost> page = sPostDao.findByRank(rank, pageable);
+		logger.info("TotalElements:"+page.getTotalElements());
+		logger.info("pageContent:"+page.getContent());
+	}
+	
+	/**
+	 * 查询部分字段 返回Object[]
+	 */
+	@Test
+	public void findUuidAndNameToObjTest() {
+		List<Object[]> list = sPostDao.findUuidAndNameToObj();
+		for(Object[] objs:list) {
+			logger.info("uuid:"+objs[0]+" name:"+objs[1]);
+		}
+	}
+	/**
+	 * 查询部分字段 返回String[]
+	 */
+	@Test
+	public void findUuidAndNameTest() {
+		String[] datas = sPostDao.findUuidAndName();
+		for(String data:datas) {
+			logger.info("data:"+data);
+		}
+	}
+	/**
+	 * 查询部分字段，并转为map
+	 */
+	@Test
+	public void findUuidAndNameToMapTest() {
+		List<Map<String,String>> datas = sPostDao.findUuidAndNameToMap();
+		for(Map<String,String> map:datas) {
+			logger.info("uuid:"+map.get("uid")+" name:"+map.get("n"));
+		}
+	}
+	/**
+	 * 多表关联查询
+	 */
+	@Test
+	public void getRolesByPostUuidTest() {
+		String postUuid = "sysadmin";
+		Pageable pageable = new PageRequest(1, 1);
+		Page<Object[]> page = sPostDao.getRolesByPostUuid(postUuid, pageable);
+		logger.info("TotalElements:"+page.getTotalElements());
+		logger.info("pageContent:"+page.getContent());
+		for(Object[] objs : page.getContent()) {
+			logger.info("uuid:"+objs[0]+" name:"+objs[1]+" roleName:"+objs[2]);
+		}
+	}
+	
+	/*@Test
+	public void findByCodeTest() {
+		String code = "sys_unit";
+		Pageable pageable = new PageRequest(1, 2);
+		Page<SPost> page = sPostDao.findByCode(code, pageable);
+		logger.info("TotalElements:"+page.getTotalElements());
+		logger.info("pageContent:"+page.getContent());
+	}*/
+	//isNull
+	@Test
+	public void findByUnitIdIsNullTest() {
+		List<SPost> posts = sPostDao.findByUnitIdIsNull();
+		logger.info("posts:"+posts.size());
+	}
+	
+	//排序
+	@Test
+	public void findByUnitIdOrderByUseTypeTest() {
+		List<SPost> posts = sPostDao.findByUnitIdOrderByUseType("test");
+		for(SPost post:posts) {
+			logger.info("name:"+post.getName()+" useType:"+post.getUseType());
+		}
+	}
+	
+	//复杂查询
+	@Test
+	public void predicateTest() {
+		String code = "sys_un";
+		String name = "帐号管";
+		String searchValue = "1";
+		Pageable pageable = new PageRequest(1, 2);
+		Page<SPost> page = sPostDao.findAll(new Specification<SPost>() {
+			
+			@Override
+			public Predicate toPredicate(Root<SPost> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+				Predicate pCode = cb.like(root.get("code").as(String.class), "%" + code + "%");
+				Predicate pName = cb.like(root.get("name").as(String.class), "%" + name + "%");
+				
+				List<Predicate> list = new ArrayList<Predicate>();
+				
+				list.add(cb.like(root.get("code").as(String.class), "%" + searchValue + "%"));
+				list.add(cb.like(root.get("name").as(String.class), "%" + searchValue + "%"));
+				list.add(cb.like(root.get("rank").as(String.class), "%" + searchValue + "%"));
+				
+				Predicate[] p = new Predicate[list.size()];
+				
+				query.where(cb.and(pCode,pName,cb.or(list.toArray(p))));
+	            return query.getRestriction();
+			}
+		},pageable);
+		logger.info("TotalElements:"+page.getTotalElements());
+		logger.info("pageContent:"+page.getContent());
+	}
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="row">
+<div class="card-box table-responsive">
+		<div class="col-2" style="float: left;">
+			<div class="card-box table-responsive">
+				<div id="basicTree">
+					<ul th:utext="${orgTreeHtml}"></ul>
+                </div>
+			</div>
+		</div>
+								 
+       <div class="col-10" style="float: right;">
+       		 <input id="org_parentId" type="hidden"/>
+       		 <div id="rightContent">
+
+       		 </div>
+      </div>
+</div>
+</div>
+</body>
+<script type="text/javascript">
+    var table =null;
+    $(document).ready(function() {
+    	 Css.loadSpecModel("rightContent","/user/user_dir");
+        //绑定树结构点击时间
+         $("#basicTree").on('select_node.jstree', function(e,data) {
+            var orgId=$('#' + data.selected).attr("rel");
+            $("#org_parentId").val(orgId);
+            return Css.loadSpecModel("rightContent","/user/user_dir");
+        }); 
+    });
+    jqueryTreeReady();
+     
+</script>
+<style>
+         
+         /* dataTables列内容居中 */  
+			.table>tbody>tr>td{  
+			        text-align:center;   
+			}  
+  
+		/* dataTables表头居中 */  
+		.table>thead:first-child>tr:first-child>th{  
+		        text-align:center;  
+		}  
+         </style>
+</html>

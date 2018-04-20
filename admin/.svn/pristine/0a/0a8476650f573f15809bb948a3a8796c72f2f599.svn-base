@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<script th:src="@{/css/adminto/pages/jquery.tree.js}" type="text/javascript"></script>
+<body>
+<div class="row">
+<div class="card-box table-responsive">
+		<div class="col-2" style="float: left;">
+			<div class="card-box table-responsive">
+                    <label>选择子系统:</label>
+                    <select>
+                        <option>1001</option>
+                        <option>1002</option>
+                        <option>1003</option>
+                        <option>1004</option>
+                        <option>1005</option>
+                    </select>
+				<div id="basicTree">
+					<ul th:utext="${funcTreeHtml}"></ul>
+                </div>
+			</div>
+		</div>
+								 
+       <div class="col-10" style="float: right;">
+       		 <input id="funcUuid" type="hidden"/>
+       		 <div id="rightContent">
+       		 	dsfa
+       		 </div>
+      </div>
+</div>
+</div>
+</body>
+<script type="text/javascript">
+    var table =null;
+    $(document).ready(function() {
+        //绑定树结构点击时间
+        $("#basicTree").on('select_node.jstree', function(e,data) {
+            console.log(data.node.data.uuid);
+            console.log(data.node.data.href);
+            var funcUuid = data.node.data.uuid;
+            //var href = data.node.data.href;
+            $("#funcUuid").val(funcUuid);
+            return Css.loadSpecModel("rightContent","/func/func_dir");
+        });
+    });
+</script>
+</html>

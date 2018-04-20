@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<div class="row">
+	<div class="card-box table-responsive">
+		<div class="col-2" style="float: left;">
+			<div class="card-box table-responsive">
+				<input type="hidden" id="checkedSysId" th:value="${checkedSysId}"/>
+				<label>选择子系统:</label>
+				<select class="sysSel">
+					<option th:each="s,sStat :${syses}" th:text="${s.getName()}" th:value="${s.getUuid()}"></option>
+				</select>
+				<div id="basicTreeDiv">
+					<div id="basicTree">
+						<ul th:utext="${funcTreeHtml}"></ul>
+					</div>
+
+					<div th:if="${funcTreeHtml} == ''">
+						<button id="addFuncIndex" type="button" onclick="addFuncIndex()" class="btn btn-success btn-rounded w-md waves-effect waves-light m-t-15">
+							<i class="fa fa-plus"></i> <span>添加功能</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-10" style="float: right;">
+			<input id="funcUuid" type="hidden"/>
+			<div id="rightContent">
+
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+<script type="text/javascript">
+    function addFuncIndex() {
+        $("#funcUuid").val(null);
+        return Css.loadSpecModel("rightContent","/func/func_dir");
+    }
+    $(document).ready(function() {
+        Css.loadSpecModel("rightContent","/func/func_dir");
+        jqueryTreeReady();
+        var checkedSysId = $("#checkedSysId").val();
+        $(".sysSel option[value='"+checkedSysId+"']").attr("selected", "selected");
+
+        $(".sysSel").change(function(){
+            var sysId = $(".sysSel").val();
+            return Css.loadSpecModel("maincontent","/func/func_tree?sysId="+sysId);
+        });
+        //绑定树结构点击事件
+        $("#basicTree").on('select_node.jstree', function(e,data) {
+            var funcUuid = data.node.data.uuid;
+            $("#funcUuid").val(funcUuid);
+            return Css.loadSpecModel("rightContent","/func/func_dir");
+        });
+    });
+</script>
+</html>

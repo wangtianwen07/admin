@@ -1,0 +1,11 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.thymeleaf.org/thymeleaf-layouts">
+<head th:include="/template_head_login :: templateHead('中软创新管理平台')"></head>
+<body>
+	
+	<div layout:fragment="content">123</div>
+	<div layout:fragment="javascript"></div>
+</body>
+</html>

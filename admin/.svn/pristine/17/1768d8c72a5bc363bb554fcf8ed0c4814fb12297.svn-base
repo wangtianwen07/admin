@@ -1,0 +1,105 @@
+package com.css.mgr.admin.srv.app.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.css.mgr.admin.dao.pojo.app.SApp;
+import com.css.mgr.admin.dao.repository.SAppDao;
+import com.css.mgr.admin.srv.app.IAppService;
+
+import net.sf.json.JSONObject;
+
+/**
+ * Date:2018年1月24日
+ * Author:Hjw
+ */
+@Service("appService")
+@Transactional
+public class AppServiceImpl implements IAppService {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+ 
+	@Autowired
+	private SAppDao sAppDao;
+	
+	public Page<SApp> findAll(JSONObject paramJson,Pageable pageable) {
+		return sAppDao.findAll(pageable);
+	}
+	public Page<SApp> listSerach(SApp sapp, Pageable pageable) {
+		Page<SApp> page = sAppDao.findAll(new Specification<SApp>() {
+			public Predicate toPredicate(Root<SApp> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+				List<Predicate> list = new ArrayList<Predicate>();
+				if (StringUtils.isNotEmpty(sapp.getAppSystemCode())) {
+	                list.add(cb.like(root.get("appSystemCode").as(String.class), "%" + sapp.getAppSystemCode() + "%"));
+	            }
+				if (StringUtils.isNotEmpty(sapp.getAppSystemName())) {
+	                list.add(cb.like(root.get("appSystemName").as(String.class), "%" + sapp.getAppSystemCode() + "%"));
+	            }
+				if (StringUtils.isNotEmpty(sapp.getAppSystemAddress())) {
+	                list.add(cb.like(root.get("appSystemAddress").as(String.class), "%" + sapp.getAppSystemAddress() + "%"));
+	            }
+				if (StringUtils.isNotEmpty(sapp.getAppSystemDescribe())) {
+	                list.add(cb.like(root.get("appSystemDescribe").as(String.class), "%" + sapp.getAppSystemDescribe() + "%"));
+	            }
+				if (StringUtils.isNotEmpty(sapp.getAppStatus())) {
+	                list.add(cb.like(root.get("appStatus").as(String.class), "%" + sapp.getAppStatus() + "%"));
+	            }
+				Predicate[] p = new Predicate[list.size()];
+				if(list.size()==0) {
+				   return cb.isNotNull(root);
+				}else {
+	            return cb.or(list.toArray(p));
+				}
+				}
+		},pageable);
+		logger.info("postFilteredPage size:"+page.getTotalElements());
+		return page;
+	}
+	@Override
+	public void delById(String id) {
+		sAppDao.delete(id);
+	}
+	@Override
+	public SApp save(SApp sApp) {
+		return sAppDao.save(sApp);
+	}
+	public SApp getSAppById(String id) {
+		return sAppDao.findOne(id);
+	}
+	public Page<SApp> listSerach(JSONObject paramJson, String searchValue, Pageable pageable) {
+			 Page<SApp> page = sAppDao.findAll(new Specification<SApp>() {
+					public Predicate toPredicate(Root<SApp> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+						Predicate pCode = cb.like(root.get("appSystemCode").as(String.class), "%" + paramJson.getString("appSystemCode") + "%");
+						Predicate pName = cb.like(root.get("appSystemName").as(String.class), "%" + paramJson.getString("appSystemName") + "%");
+						
+						List<Predicate> list = new ArrayList<Predicate>();
+						
+						list.add(cb.like(root.get("appSystemCode").as(String.class), "%" + searchValue + "%"));
+						list.add(cb.like(root.get("appSystemName").as(String.class), "%" + searchValue + "%"));
+						list.add(cb.like(root.get("appSystemAddress").as(String.class), "%" + searchValue + "%"));
+						list.add(cb.like(root.get("appSystemDescribe").as(String.class), "%" + searchValue + "%"));
+						list.add(cb.like(root.get("appStatus").as(String.class), "%" + searchValue + "%"));
+						Predicate[] p = new Predicate[list.size()];
+						
+						query.where(cb.and(pCode,pName,cb.or(list.toArray(p))));
+			            return query.getRestriction();
+					}
+				},pageable);
+				if(page!=null) logger.info("postFilteredPage size:"+page.getTotalElements());
+				return page;
+		}
+}

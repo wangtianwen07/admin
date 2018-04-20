@@ -1,0 +1,150 @@
+var Css={};
+Css.logout=function(){
+	$("#logout").submit();
+}
+Css.loadModel=function(a){
+	$("#maincontent").load(a.href);
+	
+	$.fn.toJSON = function()      
+	{      
+	   var o = {};      
+	   var a = this.serializeArray();      
+	   $.each(a, function() {  
+	       var name = this.name;  
+	       var value = this.value;  
+	       var paths = this.name.split(".");  
+	       var len = paths.length;  
+	       var obj = o;  
+	       $.each(paths,function(i,e){  
+	           if(i == len-1){  
+	               if (obj[e]) {      
+	                   if (!obj[e].push) {      
+	                       obj[e] = [obj[e]];      
+	                   }      
+	                   obj[e].push(value || '');      
+	               } else {      
+	                   obj[e] = value || '';      
+	               }  
+	           }else{  
+	               if(!obj[e]){  
+	                   obj[e] = {};  
+	               }  
+	           }  
+	           obj = o[e];  
+	       });                
+	   });
+	   return o; 
+	};  
+	return false;
+}
+/**
+ * 加载页面到指定的div
+ */
+Css.loadSpecModel=function(contentId,href){
+	$("#"+contentId).load(href);
+	
+	$.fn.toJSON = function()      
+	{      
+	   var o = {};      
+	   var a = this.serializeArray();      
+	   $.each(a, function() {  
+	       var name = this.name;  
+	       var value = this.value;  
+	       var paths = this.name.split(".");  
+	       var len = paths.length;  
+	       var obj = o;  
+	       $.each(paths,function(i,e){  
+	           if(i == len-1){  
+	               if (obj[e]) {      
+	                   if (!obj[e].push) {      
+	                       obj[e] = [obj[e]];      
+	                   }      
+	                   obj[e].push(value || '');      
+	               } else {      
+	                   obj[e] = value || '';      
+	               }  
+	           }else{  
+	               if(!obj[e]){  
+	                   obj[e] = {};  
+	               }  
+	           }  
+	           obj = o[e];  
+	       });                
+	   });
+	   return o; 
+	};  
+	return false;
+}
+
+Css.loadFirst=function(){
+	var a={href:'/first'};
+	Css.loadModel(a);
+}
+//Ajax通用方法
+Css.ajax=function(method,url,param,callback){
+	$.ajax({
+		type: method,
+		//contentType: 'application/json',
+        dataType: "json",
+        url:url,
+        data:param,
+        success: function (result) {
+        	callback(result);
+        },
+        error: function(data) {
+        	if(data.status=403){
+        		alert("错误:未授权的请求！");
+        	}else{
+        		alert("error:"+data.responseText);
+        	}
+         }
+	});
+};
+/**
+ * Tab切换页对象
+ * tabTitle:Tab页标题
+ * tabMainName:ul id
+ * tabName：li名称，默认加前缀tab_li_，一起构成 li的id
+ * tabContentMainName:tab-content的id
+ * content：页面内容
+ * 案例：参考 src\main\resources\templates\admin\post\dir.html
+ */
+function TabOption(tabTitle,tabMainName,tabName,tabContentMainName,content)
+{
+	this.tabTitle=tabTitle;
+	this.tabMainName=tabMainName;
+	this.tabName=tabName;
+	this.tabContentMainName=tabContentMainName;
+	this.content=content;
+};
+//添加Tab页
+Css.addTab=function(options) {
+	if($("#"+options.tabMainName+" > #tab_li_"+options.tabName).length > 0) {//已经存在Tab
+		$("#tab_a_"+options.tabName).click();//模拟点击
+		$("#tab_content_" + options.tabName).addClass("tab-pane fade active show");
+	} else {
+		$("#"+options.tabMainName).append('<li id="tab_li_'+options.tabName+'" class="nav-item"><a id="tab_a_'+options.tabName+'" href="#tab_content_'+options.tabName+'" data-toggle="tab" aria-expanded="false" class="nav-link">'+ options.tabTitle +'<i class="fa fa-remove" onclick="new Css.closeTab(this,event)"></i></a>');
+		$("#" + options.tabContentMainName).append('<div role="tabpanel" class="tab-pane fade" id="tab_content_'+options.tabName+'">'+options.content+'</div>');
+		$("#tab_a_"+options.tabName).click();
+		$("#tab_content_" + options.tabName).addClass("tab-pane fade active show");
+	}
+};
+//关闭Tab页
+Css.closeTab=function(tab_i,event){
+	event.stopPropagation();//阻止事件冒泡
+    var li_id = $(tab_i).parent().parent().attr('id');
+    var id = li_id.replace("tab_li_","");
+    //如果关闭的是当前激活的TAB，激活他的前一个TAB
+    var ul = $(tab_i).parent().parent().parent().attr("id");
+    var activeParentLi = $("#"+ul +" li a.active").parent();
+    if (activeParentLi.attr("id") == li_id) {
+    	activeParentLi.prev().find("a").click();
+    	var activeParentLiId = activeParentLi.prev().attr("id").replace("tab_li_","");
+    	//显示起一个Tab的内容
+    	$("#tab_content_" + activeParentLiId).addClass("tab-pane fade active show");
+    	
+    }
+    //关闭TAB
+    $("#" + li_id).remove();
+    $("#tab_content_" + id).remove();
+}

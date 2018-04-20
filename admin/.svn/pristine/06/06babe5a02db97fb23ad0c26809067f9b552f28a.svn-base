@@ -1,0 +1,32 @@
+/**
+ * Date:2018年3月6日
+ * Description:
+ * Author:QinMing
+ *
+ */
+package com.css.mgr.admin.common;
+
+import com.css.mgr.base.dao.pojo.IUser;
+
+/**
+ * Date:2018年3月6日
+ * Description:
+ * Author:QinMing
+ */
+public interface MsgService {
+	/**
+	 * 发送消息
+	 * @param title
+	 * @param msg
+	 * @param user
+	 * @return
+	 */
+	public boolean send(String title,String msg,IUser user);
+	/**
+	 * 系统消息
+	 * @param msg
+	 * @param user
+	 * @return
+	 */
+	public boolean sysMsg(String msg,IUser user);
+}

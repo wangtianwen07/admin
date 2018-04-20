@@ -1,0 +1,23 @@
+/**
+ * Copyrigth(c) Css Team
+ * All rights reserved
+ */
+package com.css.mgr.admin.dao.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import com.css.mgr.base.dao.pojo.SUnitUser;
+
+/**
+ * @author wangtianwen
+ * 2018年2月7日
+ */
+public interface SUnitUserDao  extends JpaRepository<SUnitUser, String>,JpaSpecificationExecutor<SUnitUser> {
+
+	public List<SUnitUser> findByUnitId(String unitId);
+	
+	public SUnitUser findByUserIdAndUnitId(String userId,String unitId);
+}

@@ -1,0 +1,279 @@
+/**
+ * Copyrigth(c) Css Team
+ * All rights reserved
+ */
+package com.css.mgr.admin.ctrl.func;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.css.mgr.admin.common.IDUtil;
+import com.css.mgr.admin.srv.dict.IDictService;
+import com.css.mgr.admin.srv.func.IFuncService;
+import com.css.mgr.admin.srv.sys.ISysService;
+import com.css.mgr.base.CssController;
+import com.css.mgr.base.dao.pojo.DelFlag;
+import com.css.mgr.base.dao.pojo.OpenFlag;
+import com.css.mgr.base.dao.pojo.SDict;
+import com.css.mgr.base.dao.pojo.SFunc;
+import com.css.mgr.base.dao.pojo.SResource;
+import com.css.mgr.base.dao.pojo.SSys;
+
+import net.sf.json.JSONObject;
+
+/**
+ * @author wangtianwen
+ * 2018年1月30日
+ */
+@Controller
+@RequestMapping("/func")
+public class FuncController extends CssController{
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+	private IFuncService funcService;
+	
+	@Autowired
+	private ISysService sysService;
+	
+	@Autowired
+	private IDictService dictService;
+	
+	@RequestMapping(value="/func_dir",method=RequestMethod.GET)
+	public String dir(Model model){
+		
+		JSONObject dict=new JSONObject();
+		dict.put("openflag",dictService.getDictsByTableName("d_openFlag"));
+		dict.put("funType", dictService.getDictsByTableName("FUC_TYPE"));
+		model.addAttribute("dict", dict);
+		return "admin/func/func_dir";
+	}
+	
+	@RequestMapping(value="/func_tree",method=RequestMethod.GET)
+	public String tree(Model model,HttpServletRequest request){
+		String sysId = request.getParameter("sysId");
+		if(StringUtils.isEmpty(sysId)) sysId = "1001";
+		logger.info("sysId:"+sysId);
+		List<SSys> syses = sysService.findByOpenFlag(OpenFlag.OPEN);
+		model.addAttribute("syses", syses);
+		model.addAttribute("checkedSysId", sysId);
+		String treeHtml = funcService.getTreeHtml(sysId);
+		logger.info("功能树tree:"+treeHtml);
+		model.addAttribute("funcTreeHtml",treeHtml);
+		return "admin/func/func_tree";
+	}
+
+	@RequestMapping(value="/refreshFuncTree",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> refreshFuncTree(HttpServletRequest request){
+		String sysId = request.getParameter("sysId");
+		if(StringUtils.isEmpty(sysId)) sysId = "1001";
+		logger.info("sysId:"+sysId);
+		String treeHtml=funcService.getTreeHtml(sysId);
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		try {
+			map.put("funcTreeHtml", treeHtml);
+			map.put("success", "1");
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+	/**
+	 * 查询当前功能下子功能，不包含孙子、重孙。。
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value="/query",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> query(HttpServletRequest request) {
+		Direction orderDir = Direction.ASC; 
+		String columnName = "uuid";
+		int draw = Integer.parseInt(request.getParameter("draw"));//请求次数
+		int start = Integer.parseInt(request.getParameter("start"));//数据起始位置
+		int length = Integer.parseInt(request.getParameter("length"));//数据长度
+		String order = request.getParameter("order[0][column]");//获取需要排序的字段索引
+		String dir = request.getParameter("order[0][dir]");//获取需要排序字段的排序方向
+		String column = request.getParameter("columns["+order+"][data]");//根据索引获取字段名称
+	    String searchValue = request.getParameter("search[value]");//获取用户过滤框里的字符
+	    String name = request.getParameter("name");
+	    String funcType = request.getParameter("funcType");
+	    String openflag = request.getParameter("openflag");
+	    String parentId = request.getParameter("parentId");
+	    
+	    JSONObject paramJson = new JSONObject();
+	    paramJson.put("name", name);
+	    paramJson.put("funcType", funcType);
+	    paramJson.put("openflag", openflag);
+	    paramJson.put("parentId", parentId);
+	    logger.info("paramJson:"+paramJson);
+	    if(IDUtil.isNotEmpty(dir) && !dir.equals("asc")) {
+			orderDir = Direction.DESC;
+		}
+		if(IDUtil.isNotEmpty(column)) {
+			columnName = column;
+		}
+		 //总记录数
+	    String recordsTotal = "0";
+	    //过滤后记录数
+	    String recordsFiltered = "";
+	    int page = start / length;
+	    Sort sort = new Sort(orderDir, columnName);
+	    Pageable pageable = new PageRequest(page,length,sort);
+	    
+	    Page<SFunc> funcPageAll = funcService.findAll(paramJson,pageable);
+	    
+	    Page<SFunc> funcPageFiltered = funcService.listSerach(paramJson,searchValue, pageable);
+		if(funcPageAll!=null && funcPageAll.getTotalElements()>0) {
+			logger.info(">>>>>>funcPageAll:"+funcPageAll.getTotalElements());
+			recordsTotal = String.valueOf(funcPageAll.getTotalElements());
+		}
+		if(funcPageFiltered!=null && funcPageFiltered.getTotalElements()>0) {
+			logger.info(">>>>>>funcPageFiltered:"+funcPageFiltered.getTotalElements());
+			recordsFiltered = String.valueOf(funcPageFiltered.getTotalElements());
+		}
+		Map<Object,Object> pageInfo = new HashMap<Object,Object>();
+		pageInfo.put("data", funcPageFiltered.getContent());
+		pageInfo.put("draw", draw);
+		pageInfo.put("recordsTotal", recordsTotal);
+		pageInfo.put("recordsFiltered", recordsFiltered);
+		return pageInfo;
+	}
+	
+	@RequestMapping(value="/add",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<Object,Object> add(SFunc func) {
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		if(StringUtils.isEmpty(func.getUuid())) {//添加
+			func.setUuid(IDUtil.getId());
+		} else {//删除后再更新
+			if(!funcService.exists(func.getUuid())) {
+				map.put("success", "0");
+				return map;
+			}
+		}
+		try {
+			if(StringUtils.isEmpty(func.getDelFlag()) || !func.getDelFlag().equals(DelFlag.DELETE_STATE) || !func.getDelFlag().equals(DelFlag.UN_DELETE_STATE)) {
+				func.setDelFlag(DelFlag.UN_DELETE_STATE);
+			}
+			if(StringUtils.isEmpty(func.getOpenflag()) || !func.getOpenflag().equals(OpenFlag.CLOSE) || !func.getOpenflag().equals(OpenFlag.OPEN)) {
+				func.setOpenflag(OpenFlag.OPEN);
+			}
+			if(StringUtils.isEmpty(func.getParentId())) {
+				func.setParentId(null);
+			}
+			func = funcService.save(func);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<Object,Object> del(SFunc func){
+		String uuid = func.getUuid();
+		logger.info("uuid:"+uuid);
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		try {
+			funcService.delByUuid(uuid);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+	@RequestMapping(value="/get",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> get(String uuid){
+		logger.info("uuid:"+uuid);
+		SFunc func = funcService.getSFuncByUuid(uuid);
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		try {
+			map.put("sFunc", func);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+	@RequestMapping(value="/queryRes",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> queryRes(HttpServletRequest request) {
+		String funcId = request.getParameter("funcId");
+		logger.info("funcId:"+funcId);
+		List<SResource> datas = funcService.findResByFuncId(funcId);
+		Map<Object,Object> pageInfo = new HashMap<Object,Object>();
+		pageInfo.put("data", datas);
+		return pageInfo;
+	}
+	
+	@RequestMapping(value="/delRes",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<Object,Object> delRes(HttpServletRequest request){
+		String resUuid = request.getParameter("resUuid");
+		logger.info("resUuid:"+resUuid);
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		try {
+			funcService.delRes(resUuid);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+	@RequestMapping(value="/getRes",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> getRes(String resUuid){
+		logger.info("resUuid:"+resUuid);
+		SResource sRes = funcService.getRes(resUuid);
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		try {
+			map.put("sRes", sRes);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+	@RequestMapping(value="/addRes",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<Object,Object> addRes(SResource sRes) {
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		if(StringUtils.isEmpty(sRes.getUuid())) {//手填资源标识
+			map.put("success", "0");
+			return map;
+		} 
+		try {
+			sRes = funcService.saveRes(sRes);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+}

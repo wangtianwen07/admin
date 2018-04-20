@@ -1,0 +1,30 @@
+/**
+ * Date:2018年1月17日
+ * Description:
+ * Author:QinMing
+ *
+ */
+package com.css.mgr.admin.srv.user;
+
+import com.css.mgr.base.dao.pojo.SUser;
+import net.sf.json.JSONObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+/**
+ * Date:2018年1月17日
+ * Description:
+ * Author:QinMing
+ */
+public interface IUserService {
+
+    Page<SUser> findAll(JSONObject paramJson, Pageable pageable);
+
+    //条件、分页查询
+    Page<SUser> listSerach(JSONObject paramJson, String searchValue, Pageable pageable);
+    
+    public Page<Object[]> findAllByOrgId(String orgId, Pageable pageable);
+	
+    //根据id删除sapp数据
+	void delById(String uuid);
+}

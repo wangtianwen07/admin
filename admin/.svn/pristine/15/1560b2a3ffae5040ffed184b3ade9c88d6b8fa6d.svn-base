@@ -1,0 +1,128 @@
+package com.css.mgr.admin.srv.dict.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import com.css.mgr.admin.dao.repository.SDictDao;
+import com.css.mgr.admin.srv.dict.IDictService;
+import com.css.mgr.base.dao.pojo.SDict;
+
+import net.sf.json.JSONObject;
+
+/**
+ * Date:2018年2月8日
+ * Description:
+ * Author:hjw
+ */
+@Service("dictService")
+@Transactional
+public class DictServiceImpl implements IDictService {
+     
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+    private SDictDao sDictDao;
+
+	@Override
+	public Page<SDict> findAll(JSONObject paramJson, Pageable pageable) {
+			return sDictDao.findAll(pageable);
+	}
+
+	@Override
+	public Page<SDict> listSerach(JSONObject paramJson, String searchValue, Pageable pageable) {
+		 Page<SDict> page = sDictDao.findAll(new Specification<SDict>() {
+				public Predicate toPredicate(Root<SDict> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+						Predicate pCode = cb.like(root.get("code").as(String.class), "%" + 	paramJson.getString("code") + "%");
+						Predicate pName = cb.like(root.get("name").as(String.class), "%" + 	paramJson.getString("name") + "%");
+						Predicate patId = cb.like(root.get("parentId").as(String.class), "%" + 	paramJson.getString("parentId") + "%");
+					    
+					List<Predicate> list = new ArrayList<Predicate>();
+					list.add(cb.like(root.get("code").as(String.class), "%" + searchValue + "%"));
+					list.add(cb.equal(root.get("name").as(String.class), "%" + searchValue + "%"));
+					list.add(cb.equal(root.get("remark").as(String.class), "%" + searchValue + "%"));
+					Predicate[] p = new Predicate[list.size()];
+					
+					query.where(cb.and(pCode,pName,patId,cb.or(list.toArray(p))));
+					query.orderBy(cb.desc(root.get("code").as(String.class)));  
+		            return query.getRestriction();
+				}
+			},pageable);
+			if(page!=null) logger.info("postFilteredPage size:"+page.getTotalElements());
+			return page;
+	   }
+
+	@Override
+	public List<SDict> findAllByParentId(String parentId) {
+		return sDictDao.findByParentId(parentId);
+	   }
+
+	@Override
+	public SDict save(SDict sDict) {
+		return sDictDao.save(sDict);
+	   }
+
+	@Override
+	public void deleByuuid(String uuid) {
+		sDictDao.delete(uuid);
+	  }
+
+	@Override
+	public SDict getSdictById(String uuid) {
+		return sDictDao.getOne(uuid);
+	}
+
+	public Page<List<SDict>> findSDictAll(String uuid, Pageable pageable) {
+		return sDictDao.findAllByParentId(uuid, pageable) ;
+	}
+
+    @Override
+    public List<SDict> getDictType(String table) {
+        return  sDictDao.findByTableName(table);
+    }
+
+	@Override
+	public String getDictTypeAndCode(String tableName, String code) {
+		return sDictDao.findByTableNameAndCode(tableName, code);
+	}
+
+	@Override
+	public List<SDict> getDictByTableName(String tableName) {
+		return sDictDao.findByTableName(tableName);
+	}
+
+	@Override
+	@Cacheable(value="dictCache",keyGenerator = "keyGenerator")
+	public List<SDict> loadSelect(String tableName) {
+		return sDictDao.findByTableName(tableName);
+	}
+
+	@Override
+	public List<SDict> findSDictAllByCode(String code) {
+		return  sDictDao.findSDictAllByCode(code);
+	}
+
+	@Override
+	public JSONObject getDictsByTableName(String tableName) {
+		JSONObject dictJsonStr = new JSONObject();
+		List<SDict> dicts = loadSelect(tableName);
+		for(SDict dict:dicts) {
+			dictJsonStr.put(dict.getCode(), dict.getName());
+		}
+		return dictJsonStr;
+	}
+}

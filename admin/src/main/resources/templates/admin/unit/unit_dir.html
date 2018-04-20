@@ -1,0 +1,474 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="card-box table-responsive">
+	<div class="col-xl-12">
+		<!-- Tab切换页 -->
+	    <ul id="tab_nav" class="nav nav-tabs">
+	        <li id="tab_li_home" class="nav-item">
+	            <a id="tab_a_home" href="#tab_content_home" data-toggle="tab" aria-expanded="false" class="nav-link active">
+	            	单位管理 
+	            </a>
+	        </li>
+	    </ul>
+	
+		<!-- Tab默认页 -->
+	    <div class="tab-content" id="tab-content">
+	        <div role="tabpanel" class="tab-pane fade active show" id="tab_content_home">
+	                     <div class="card m-b-20 card-body">
+	                      <form class="form-inline">
+	                          <div class="form-group mx-sm-3">
+	                              <input type="text" class="form-control" id="sUnit_name" placeholder="请输入单位名称">
+	                          </div>
+	                          <div class="form-group mx-sm-3">
+	                              <input type="text" class="form-control" id="sUnit_code" placeholder="请输入单位编码">
+	                          </div>
+	                          <div class="form-group mx-sm-3">
+	                              <input type="text" class="form-control" id="sUnit_open" placeholder="请输入单位状态">
+	                          </div>
+	                          <button class="btn btn-success" id="unit_query_btn">模糊查询</button>
+	                      </form>
+	                		</div>
+	                		<div class="col-12 m-b-15">
+	                			<button id="add_btn" type="button" onclick="addUnit()" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15"  data-toggle="modal" data-target="#myModal"> 
+			                    	<i class="fa fa-plus"></i> <span>添加单位</span> 
+			                    </button>
+	                		</div>
+	                     <table id="unit-datatable-buttons" class="table table-striped table-bordered" cellspacing="0" width="100%">
+	                         <thead>
+	                         <tr>
+	                         	 <th>操作</th>
+	                         	 <th>单位标识</th>
+	                             <th>单位编码</th>
+	                             <th>单位名称</th>
+	                             <th>状态</th>
+	                             <th>岗位</th>
+	                             <th>级别</th>
+	                         </tr>
+	                         </thead>
+	                         <tbody>
+	                         </tbody>
+	                     </table>
+	        </div>
+	    </div>
+	</div>
+</div>
+
+<!-- 模态框 -->
+<div id="add_unit_div">       
+  <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="max-width:700px;margin:70px auto">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myModalLabel">添加单位</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              </div>
+              <div class="modal-body">
+                  <div class="card-box">
+                     <div class="row">
+                         <div class="col-12">
+                             <div class="p-20">
+                                 <form id="sUnit_form" class="form-horizontal" role="form">
+                             		<input id="csrf_taken" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                             		<input id="uuid" type="hidden" name="uuid">
+                             		<input id="parentId" type="hidden" name="parentId">
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">单位编码</label>
+                                         <div class="col-10">
+                                             <input type="text" id="unitCode" name="unitCode" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">单位名称</label>
+                                         <div class="col-10">
+                                             <input type="text" id="unitName" name="unitName" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">管理级别</label>
+                                         <div class="col-10">
+                                             <input type="text" id="mgrNum" name="mgrNum" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">设置状态</label>
+                                         <div class="col-10">
+                                             <input type="text" id="openFlag" name="openFlag" class="form-control" >
+                                         </div>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+
+                     </div>
+                     <!-- end row -->
+                 </div>
+              </div>
+              <div class="modal-footer">
+                  <button id="close_btn" type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+                  <button id="unit_save_btn" type="button" class="btn btn-success waves-effect waves-light">保存</button>
+              </div>
+          </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+  </div>
+</div>
+
+<div id="add_mgr_div">       
+  <div id="myMgrModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="max-width:700px;margin:70px auto">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myMgrModalLabel">关联管理员</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              </div>
+              <div class="modal-body">
+                  <div class="card-box">
+                	  <form class="form-inline">
+                         <div class="form-group mx-sm-3">
+                             <input type="text" class="form-control" id="sUser_loginName" placeholder="请输入登录名">
+                         </div>
+                         <div class="form-group mx-sm-3">
+                             <input type="text" class="form-control" id="sUser_realName" placeholder="请输入真实姓名">
+                         </div>
+                         <button class="btn btn-success" id="user_query_btn">模糊查询</button>
+                     </form>
+                     <div class="row">
+                         <div class="col-12">
+                            <table id="addMgr-datatable-buttons" class="table table-striped table-bordered" cellspacing="0" width="100%">
+		                         <thead>
+		                         <tr>
+		                         	<th>操作</th>
+		                         	<th>管理员uuid</th>
+		                             <th>登录名</th>
+		                             <th>姓名</th>
+		                             <th>类型</th>
+		                             <th>状态</th>
+		                         </tr>
+		                         </thead>
+		                         <tbody>
+		                         </tbody>
+		                     </table>
+                         </div>
+
+                     </div>
+                     <!-- end row -->
+                 </div>
+              </div>
+              <div class="modal-footer">
+                  <button id="addMgr_close_btn" type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+                  <button id="addMgr_save_btn" type="button" class="btn btn-success waves-effect waves-light">确认</button>
+              </div>
+          </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+  </div>
+</div>
+</body>
+
+<script type="text/javascript">
+			function bindMgr(event) {
+				//event.stopPropagation();//阻止事件冒泡
+				var addMgrTable = $('#addMgr-datatable-buttons').DataTable({
+			        scrollX: true,//水平滚动条
+			        ordering: true,
+			        retrieve: true,
+
+                    dom: Css.getDom(),
+                    language: Css.getLaguage(),
+			        ajax: {
+			            "url": "/unit/allMgr",
+			             "data": function( sUser ) {
+			            	sUser.loginName = $("#sUser_loginName").val(); 
+			            	sUser.realName = $("#sUser_realName").val();                     	
+                         },
+			             "dataSrc": "data"
+			        },
+			        columns: [
+			        	{"data": null},
+			        	{"data": "uuid"},
+			            {"data": "loginName"},
+			            {"data": "realName"},
+			            {"data": "userType"},
+			            {"data": "openFlag"}
+			        ],
+			        columnDefs: [
+			        	{
+								targets: [1,2,3,4,5],
+								orderable: false
+							},
+			            {
+			                targets: 0,
+			                render: function (data, type, row, meta) {
+			                    return data = '<div class="radio radio-success">' +
+			                    '<input type="radio" name="bindMgr_radio" id="radio4" value="'+row.uuid+'">' +
+			                    '<label for="radio4">' +
+			                    '' +
+			                    '</label>' +
+			                '</div>';
+			                }
+			            },
+							{
+			            	targets: 1,
+			            	visible: true
+							}
+			        ]
+			    });
+			}
+			
+			//解绑下单位下管理员
+			function cancelMgr(mgrUuid) {
+				console.log("mgrUuid:"+mgrUuid);
+				var csrf_taken = $("#csrf_taken").val();
+				Css.ajax("POST","/unit/cancelMgr",{"_csrf":csrf_taken,"mgrUuid":mgrUuid},function(result){
+            		if(result.success=="1") {
+            			$("#mgr-datatable-buttons").DataTable().ajax.reload();
+            		} else {
+            			alert("解绑失败!");
+            		}
+                });
+			}
+
+			//设置管理员
+			function gantMgr(unitId) {
+				/**
+				 * tabTitle:Tab页标题
+				 * tabMainName:ul id
+				 * tabName：li名称，默认加前缀tab_li_，一起构成 li的id
+				 * tabContentMainName:tab-content的id
+				 * content：页面内容
+				 */
+				 content = '<div id="gant_mgr_tab">' +
+         						'<div class="card m-b-20 card-body">' +
+			                      '<form class="form-inline" onsubmit="return false">' +
+         							'<input id="unitId" type="hidden" name="unitId" value="'+unitId+'">' +
+			                      	'<div class="col-2">' +
+			                                 '<input type="text" class="form-control" id="mgrName" placeholder="请输入登录名或真实姓名">' +
+			                             '</div>' +
+			                          '<button class="btn btn-success" id="mgr_query_btn" onclick="mgrQuery(event)">模糊查询</button>' +
+			                      '</form>' +
+			                		'</div>' +
+								'<div class="col-12 m-b-15">' +
+									'<button id="bind_mgr_btn" onclick="bindMgr(event);" type="button" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15"  data-toggle="modal" data-target="#myMgrModal">' + 
+							    			'<i class="fa fa-plus"></i> <span>关联管理员</span>'  +
+							        '</button>' +
+							        /* '<button id="batch_delrole_btn" type="button" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15">' + 
+							     		'<i class="mdi mdi-close"></i> <span>批量删除</span>'  +
+							   	 	'</button>' + */
+								'</div>' +
+							     '<table id="mgr-datatable-buttons" class="table table-striped table-bordered " cellspacing="0" width="100%">' +
+							         '<thead>' +
+								         '<tr style="width: 100%">' +
+								         	'<th>操作</th>' +
+								         	 '<th>管理员uuid</th>' +
+								             '<th>真实姓名</th>' +
+								             '<th>登录名称</th>' +
+								             '<th>所属机构</th>' +
+								             '<th>状态</th>' +
+								         '</tr>' +
+							         '</thead>' +
+							         '<tbody>' +
+							         '</tbody>' +
+							     '</table>' +
+							'</div>';
+				 options=new TabOption("设置管理员","tab_nav","gant_mgr","tab-content",content);
+				 Css.addTab(options);//添加Tab
+				 var mgrTable = $('#mgr-datatable-buttons').DataTable({
+	                    scrollX: true,//水平滚动条
+	                    ordering: true,
+	                    retrieve: true,
+                     dom: Css.getDom(),
+                     language: Css.getLaguage(),
+	                    ajax: {
+	                        "url": "/unit/queryMgr",
+	                        "data": function(data) {
+	                        	data.unitId = unitId;
+	                        	data.mgrName = $("#mgrName").val();
+	                        },
+	                        "dataSrc": "data"
+	                    },
+	                    columns: [
+	                    	{"data": null},
+	                    	{"data": "unitUserId"},
+	                        {"data": "user.realName"},
+	                        {"data": "user.loginName"},
+	                        {"data": "unitName"},//所属单位
+	                        {"data": "user.openFlag"}
+	                    ],
+	                    columnDefs: [
+	                    	{
+	         					targets: [1,2,3,4,5],
+	         					orderable: false
+	         				},
+	                        {
+	                            targets: 0,
+	                            render: function (data, type, row, meta) {
+	                                return data = '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" onclick=cancelMgr("'+row.unitUserId+'")>删除</button>';
+	                            }
+	                        },
+	         				{
+	                        	targets: 1,
+	                        	visible: true
+	         				}
+	                    ]
+	                });
+			}
+			
+			//添加单位
+			function addUnit() {
+				$("#uuid").val("");
+				$("#parentId").val("");
+        		$("#unitCode").val("");
+        		$("#unitName").val("");
+        		$("#mgrNum").val("");
+        		$("#openFlag").val("");
+			}
+			//更新
+			function updUnit(uuid) {
+				Css.ajax("GET","/unit/get",{"uuid":uuid},function(result){
+            		if(result.success=="1") {
+            			var sUnit = result.sUnit;
+            			var sFunc = result.sFunc;
+		        		$("#uuid").val(sUnit.uuid);
+		        		$("#parentId").val(sUnit.parentId);
+		        		$("#unitCode").val(sUnit.unitCode);
+		        		$("#unitName").val(sUnit.unitName);
+		        		$("#mgrNum").val(sUnit.mgrNum);
+		        		$("#openFlag").val(sUnit.openFlag);
+            		} else {
+            			alert("获取信息失败");
+            		}
+                });
+			}
+			//删除功能
+			function delUnit(uuid) {
+				var delFlag=confirm("确认删除吗？")
+				var csrf_taken = $("#csrf_taken").val();
+				if(delFlag){
+					Css.ajax("POST","/unit/del",{"_csrf":csrf_taken,"uuid":uuid},function(result){
+	            		if(result.success=="1") {
+	            			$('#unit-datatable-buttons').DataTable().draw();
+	            			refreshUnitTree();
+	            		} else {
+	            			alert("删除失败!");
+	            		}
+	                });
+				}
+			}
+			
+			/**
+		     * 刷新树
+		     */
+		    function refreshUnitTree() {
+		        Css.ajax("GET","/unit/refreshUnitTree",null,function(result){
+	        	    var html="<div id=\"basicTree\">"+
+	                	"<ul>"+result.unitTreeHtml+"</ul>"+
+	                "</div>";
+	                $("#basicTreeDiv").html(html);
+		            jqueryTreeReady();
+		            //绑定树结构点击事件
+		            $("#basicTree").on('select_node.jstree', function(e,data) {
+		            	var unitUuid = data.node.data.uuid;
+		                $("#unitUuid").val(unitUuid);
+		                return Css.loadSpecModel("rightContent","/unit/unit_dir");
+		            });
+		        });
+		    }
+			
+		    function mgrQuery(event) {
+				$("#mgr-datatable-buttons").DataTable().ajax.reload();
+			}
+		    
+            $(document).ready(function() {
+            	$("#addMgr_save_btn").click(function(){
+            		var mgrUuid = $("input[name='bindMgr_radio']:checked").val();
+            		var unitId = $("#unitId").val();
+            		var csrf_taken = $("#csrf_taken").val();
+            		console.log(mgrUuid+":"+unitId+":"+csrf_taken);
+                	Css.ajax("POST","/unit/bindMgr",{"mgrUuid":mgrUuid,"unitId":unitId,"_csrf":csrf_taken},function(result){
+                		if(result.success=="1") {
+	                    	$("#addMgr_close_btn").trigger("click");//触发关闭事件
+    	                    $("#mgr-datatable-buttons").DataTable().ajax.reload();//刷新列表
+                		} else {
+                			alert("添加管理员有误!");
+                		}
+                    });
+                });
+            	
+                $("#unit_query_btn").click(function(){
+                	table.draw();
+                	return false;//阻止默认的跳转行为
+         		});
+                
+                $("#user_query_btn").click(function(){
+                	$("#addMgr-datatable-buttons").DataTable().ajax.reload();
+                	return false;//阻止默认的跳转行为
+         		});
+                
+                $("#unit_save_btn").click(function(){
+                	var unitUuid = $("#unitUuid").val();
+                	$("#parentId").val(unitUuid);
+                	var params = $("#sUnit_form").toJSON();
+                	Css.ajax("POST","/unit/add",params,function(result){
+                		if(result.success=="1") {
+	                    	$("#close_btn").trigger("click");//触发关闭事件
+    	                    table.draw();
+    	                    refreshUnitTree();
+                		} else {
+                			alert("表单填写有误,重新填写!");
+                		}
+                    });
+                });
+                
+                var table = $('#unit-datatable-buttons').DataTable({
+                    scrollX: true,//水平滚动条
+                    processing: true,
+                    serverSide: true,//服务器处理
+                    ordering: true,
+                    dom: Css.getDom(),
+                    language: Css.getLaguage(),
+                    ajax: {
+                        "url": "/unit/query",
+                        "data": function( sUnit ) {
+                        	sUnit.parentId = $("#unitUuid").val(); 
+                        	sUnit.unitCode = $("#sUnit_code").val();                     	
+                        	sUnit.unitName = $("#sUnit_name").val();                     	
+                        	sUnit.openFlag = $("#sUnit_open").val();
+                        },
+                        "dataSrc": "data"
+                    },
+                    columns: [
+                    	{"data": null},
+                    	{"data": "uuid"},
+                        {"data": "unitCode"},
+                        {"data": "unitName"},
+                        {"data": "openFlag"},
+                        {"data": "unitName"},//岗位,最后更新
+                        {"data": "mgrNum"}
+                    ],
+                    columnDefs: [
+                    	{
+         					targets: [1,2,3,4,5,6],
+         					orderable: false
+         				},
+                        {
+                            targets: 0,
+                            render: function (data, type, row, meta) {
+                                return data = '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" onclick=delUnit("'+row.uuid+'")>删除</button>' +
+                                '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" data-toggle="modal" data-target="#myModal" onclick=updUnit("'+row.uuid+'")>更新</button>' +
+                                '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" onclick=gantMgr("'+row.uuid+'")>设置管理员</button>';
+                            }
+                        },
+         				{
+                        	targets: 1,
+                        	visible: true
+         				}
+                    ]
+                });
+
+                
+            	table.buttons().container()
+                        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+            	
+            } );
+        </script>
+
+</html>

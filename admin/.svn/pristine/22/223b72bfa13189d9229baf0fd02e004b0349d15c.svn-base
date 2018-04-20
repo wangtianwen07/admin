@@ -1,0 +1,97 @@
+/**
+ * Copyrigth(c) Css Team
+ * All rights reserved
+ */
+package com.css.mgr.admin.dao.repository;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+
+import com.css.mgr.base.dao.pojo.SPost;
+import com.css.mgr.base.dao.pojo.SRole;
+
+/**
+ * @author wangtianwen
+ * 2018年1月22日
+ */
+public interface SPostDao extends JpaRepository<SPost, String>,JpaSpecificationExecutor<SPost> {
+	/**
+	 * @Query select uuid,name from SPost  JPQL语法
+	 */
+	
+	//单表 分页  select * from s_post where rank="1" LIMIT 2,2
+	public Page<SPost> findByRank(String rank,Pageable pageable);
+	
+	//查询部分字段 返回Object[]
+	@Query("select uuid,name from SPost")
+	public List<Object[]> findUuidAndNameToObj();
+	
+	//查询部分字段 返回String[]
+	@Query("select uuid,name from SPost")
+	public String[] findUuidAndName();
+	
+	//查询部分字段，并转为map
+	@Query("select uuid as uid,name as n from SPost")
+	public List<Map<String,String>> findUuidAndNameToMap();
+
+	/**
+	 *  多表关联查询
+	    select p.SPOST_ID,p.`NAME`,r.`NAME` as roleName from s_post p
+		left join s_post_role pr on p.SPOST_ID = pr.SPOST_ID
+		left join s_role r on r.SROLE_ID = pr.SROLE_ID
+		where p.SPOST_ID='sysadmin' 
+		limit 1,1
+		或者
+		select p.SPOST_ID,p.`NAME`,r.`NAME` as roleName from s_post p,s_post_role pr,s_role r
+		where p.SPOST_ID = pr.SPOST_ID and r.SROLE_ID = pr.SROLE_ID
+		and  p.SPOST_ID='sysadmin' 
+		limit 1,1
+	 */
+	/**
+	 * 因我们表之间没有物理外键，以下JPQL写法是错误的。
+		@Query(value="select p.uuid,p.name,r.name as roleName from SPost p "
+			+ "left join SPostRole pr on p.uuid = pr.postId "
+			+ "left join SRole r on r.uuid = pr.roleId "
+			+ "where p.uuid = ?1")
+		如果习惯left join on的写法，可以采用原生sql来写,设置nativeQuery=true。但是以下写法在当前版本不支持
+		@Query(value="select p.SPOST_ID,p.NAME,r.NAME as roleName from s_post p "
+			+ "left join s_post_role pr on p.SPOST_ID = pr.SPOST_ID "
+			+ "left join s_role r on r.SROLE_ID = pr.SROLE_ID "
+			+ "where p.SPOST_ID = ?1",
+			countQuery="select count(p.SPOST_ID) as roleName from s_post p "
+					+ "left join s_post_role pr on p.SPOST_ID = pr.SPOST_ID "
+					+ "left join s_role r on r.SROLE_ID = pr.SROLE_ID "
+					+ "where p.SPOST_ID = ?1",
+			nativeQuery=true)
+	 */
+	@Query(value="select p.uuid,p.name,r.name as roleName from SPost p,SPostRole pr,SRole r"
+			+ " where p.uuid = pr.postId and r.uuid = pr.roleId and p.uuid = ?1")
+	public Page<Object[]> getRolesByPostUuid(String postUuid,Pageable pageable);
+
+	//isNull查询 select * from s_post where p.sunit_id is null
+	public List<SPost> findByUnitIdIsNull();
+	
+	//排序
+	public List<SPost> findByUnitIdOrderByUseType(String unitId);
+	
+	
+	public SPost findByUuid(String postId);
+	
+	/**
+	 * 以下写法在当前版本是不支持的，在最新jpa中可以支持native分页
+	 * @param code
+	 * @param pageable
+	 * @return
+	 
+	@Query(value = "SELECT * FROM s_post WHERE code = ?1",
+		    countQuery = "SELECT count(*) FROM s_post WHERE code = ?1",
+		    nativeQuery = true)
+	Page<SPost> findByCode(String code, Pageable pageable);
+	*/
+}

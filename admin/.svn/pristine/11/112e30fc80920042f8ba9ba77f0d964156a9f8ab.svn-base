@@ -1,0 +1,5 @@
+package com.css.mgr.admin.srv.dict;
+
+public interface IDictService {
+
+}

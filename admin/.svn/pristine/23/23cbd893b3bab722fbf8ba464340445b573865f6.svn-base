@@ -1,0 +1,575 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div class="row">
+                            <div class="col-12">
+                                <div class="card-box table-responsive">
+                                    	<div class="col-xl-12">
+						     <!-- Tab切换页 -->
+						                    <ul id="tab_nav" class="nav nav-tabs">
+						                        <li id="tab_li_home" class="nav-item">
+						                            <a id="tab_a_home" href="#tab_content_home" data-toggle="tab" aria-expanded="false"
+						                               class="nav-link active">
+						                                		字典管理
+						                            </a>
+						                        </li>
+						                    </ul>
+                                    <!-- Tab默认页 -->
+					       <div class="tab-content" id="tab-content">
+					          <div role="tabpanel" class="tab-pane fade active show" id="tab_content_home"> 
+                                    <div class="card m-b-20 card-body">
+	                                    <form class="form-inline">
+	                                    	<div class="col-2">
+                                                <input type="text" class="form-control" id="sDict_code" placeholder="请输入字典编码">
+                                            </div>
+	                                        <div class="form-group mx-sm-3">
+	                                            <input type="text" class="form-control" id="sDict_name" placeholder="请输入字典名称">
+	                                        </div>
+	                                         <div class="form-group mx-sm-3">
+	                                            <input id="parentId" type="hidden" th:name="${parentId}" th:value="${parentId}">
+	                                        </div>
+	                                        <button class="btn btn-primary" id="query_btn">查询</button>
+	                                    </form>
+                               		</div>
+                               		<div class="col-12 m-b-15">
+                               			<button id="add_btn" type="button" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15" onclick="getDictAdd()"> 
+		                                 	<i class="fa fa-plus"></i> <span>添加</span> 
+		                                 </button>
+		                                 <button id="batch_del_btn" type="button" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-r-15 disabled"> 
+		                                 	<i class="mdi mdi-close"></i> <span id="del_model">批量删除</span> 
+		                                 </button>
+                               		</div>
+                                     <table id="datatable-buttons" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr>
+                                            <th><input type="checkbox" class="checkall"></th>
+                                             <th>操作</th>
+                                            <th>字典编码</th>
+                                            <th>字典名称</th>
+                                            <th>字典描述</th>
+                                            <th>父类Id</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>  
+						               </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
+<div id="add_post_div">       
+
+  <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="max-width:700px;margin:70px auto">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myModalLabel">修改字典</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              </div>
+              <div class="modal-body">
+                  <div class="card-box">
+                     <div class="row">
+                         <div class="col-12">
+                             <div class="p-20">
+                                 <form id="sDict_form" class="form-horizontal" role="form">
+                             		<input id="csrf_taken" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                             		 <input type="hidden" id="uuid2" name="uuid" class="form-control" >
+                             		  <input type="hidden" id="parentId2" name="parentId" class="form-control" >
+                                     <div class="form-group row" >
+                                         <label class="col-2 col-form-label">字典编码</label>
+                                         <div class="col-10">
+                                             <input type="text" id="code" name="code" readonly="readonly" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">字典名称</label>
+                                         <div class="col-10">
+                                             <input type="text" id="name" name="name" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">字典描述</label>
+                                         <div class="col-10">
+                                             <input type="text" id="remark" name="remark"  class="form-control" >
+                                         </div>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+
+                     </div>
+                     <!-- end row -->
+              </div>
+              <div class="modal-footer">
+                  <button id="close_btn" type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+                  <button id="save_btn" type="button" class="btn btn-primary waves-effect waves-light">保存</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  </div>
+ 
+ 
+ <div id="myModal1" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="max-width:700px;margin:70px auto">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myModalLabel">添加字典</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              </div>
+              <div class="modal-body">
+                  <div class="card-box">
+                     <div class="row">
+                         <div class="col-12">
+                             <div class="p-20">
+                                 <form id="sDict_form1" class="form-horizontal" role="form">
+                                  <input id="csrf_taken" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                  <input type="hidden"  id="parentId1" name="parentId"> 
+                             		<div class="form-group row">
+                                         <label class="col-2 col-form-label">字典编码</label>
+                                         <div class="col-10">
+                                             <input type="text" id="code1" name="code" class="form-control" required="required" onblur=checkCode()>
+                                              <i id="noreapeat" style="color:red;"></i>
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">字典名称</label>
+                                         <div class="col-10">
+                                             <input type="text" id="name1" name="name" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">字典描述</label>
+                                         <div class="col-10">
+                                             <input type="text" id="remark1" name="remark"  class="form-control" >
+                                         </div>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+
+                     </div>
+                     <!-- end row -->
+              </div>
+              <div class="modal-footer">
+                  <button id="close_btn1" type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+                  <button id="save_btn1" type="button" class="btn btn-primary waves-effect waves-light">保存</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  </div>
+ 
+ 
+ 
+  </div>
+
+</body>
+
+<script type="text/javascript">
+        function checkCode(){
+        	var code=$("#code1").val();
+        	var parentId=null;
+        	parentId1 =$("#parentId").val();
+        	parentId2=$("#parentId1").val();
+        	if(parentId1!=null && parentId2==null){
+        		parentId=parentId1;
+        	}else if(parentId2!=null){
+        		parentId=parentId2;
+        	}
+        	$.ajax({
+				type: "GET",
+		        url:"/dict/getCode",
+		        data:{"code":code,"parentId":parentId}, 
+		         success: function (result){
+		        	 if(result.success=="0"){
+		        	 	alert("字典编码已重复！请重新填写") 
+		        	 	$("#save_btn1").attr({"disabled":"disabled"});
+		        	 }else{
+		        		$("#save_btn1").attr("disabled",false);
+		        	   }
+		        	 }
+        	  })
+        }
+
+       
+			function updSDict(uuid) {
+				$.ajax({
+					type: "GET",
+			        url:"/dict/get",
+			        data:{"uuid":uuid}, 
+			         success: function (result) {
+			        	if(result.success=="1"){
+			        		$("#code").val(result.code);
+			        		$("#name").val(result.name);
+			        		$("#remark").val(result.remark);
+			        		$("#uuid2").val(result.uuid);
+			        		$("#parentId2").val(result.parentId);
+			        	} else {
+			        		alert("get失败");
+			        	}
+			        },
+			        error: function(data) {
+			            alert("error:"+data.responseText);
+			            
+			         }
+				});
+			}
+
+			function delSDict(uuid) {
+				var delflag=confirm("确认删除吗？")
+				var csrf_taken = $("#csrf_taken").val();
+				var params = $("#sDict_form").toJSON();
+				if(delflag){
+					Css.ajax("POST","/dict/del",{"_csrf":csrf_taken,"uuid":uuid},function(result){
+	            		if(result.success=="1") {
+	            			var table = $('#datatable-buttons');
+	            			console.log(table);
+	            			$('#datatable-buttons').DataTable().draw();
+	            		} else {
+	            			alert("del失败!");
+	            		}
+	                });
+				}
+			}
+			
+			// 批量删除 
+		$("#del_model").click(function(){
+		// 判断是否至少选择一项
+		var checkedNum = $("input[name='sDictCheck']:checked").length;
+		if(checkedNum == 0) {
+		alert("请选择至少一项！");
+		  return;
+		 }
+		// 批量选择
+		if(confirm("确定要删除所选字典吗？")) {
+		var checkedList = new Array();
+		$("input[name='sDictCheck']:checked").each(function() {
+		checkedList.push($(this).val());
+		   });
+		$.ajax({
+		type: "GET",
+		url: "/dict/deletemore",
+		data: {'ids':checkedList.toString()},
+		 success: function(result) {
+			 if(result.success=="1") {
+				 $("[name ='sDictCheck']:checkbox").attr("checked", false);
+				 $('#datatable-buttons').DataTable().draw();
+     		} else {
+     			alert("删除失败！");
+     		}
+		
+		   }
+		  });
+		}
+		});
+		
+		
+            $(document).ready(function() {  		
+                $("#query_btn").click(function(){
+                	table.draw();
+                	return false;//阻止默认的跳转行为
+         		});
+                
+                //修改之后保存系统
+                $("#save_btn").click(function(){
+                	var params = $("#sDict_form").toJSON();
+                	console.log("params:"+params);
+                	Css.ajax("POST","/dict/add",params,function(result){
+                		if(result.success=="1") {
+	                    	$("#close_btn").trigger("click");//触发关闭事件
+    	                    $("#dict-datatable-buttons").DataTable().ajax.reload();
+    	                    //$('#datatable-buttons').DataTable().draw();
+                		} else {
+                			alert("表单填写有误,重新填写!");
+                		}
+                    });
+                });
+                
+                //保存系统
+                $("#save_btn1").click(function(){
+                	var params = $("#sDict_form1").toJSON();
+                	console.log("params:"+params);
+                	Css.ajax("POST","/dict/add",params,function(result){
+                		if(result.success=="1") {
+			        		$("#code1").val("");
+			        		$("#name1").val("");
+			        		$("#remark1").val("");
+                			$("#close_btn1").trigger("click");//触发关闭事件
+    	                    $("#dict-datatable-buttons").DataTable().ajax.reload();
+    	                    //$('#datatable-buttons').DataTable().draw();
+                		} else {
+                			alert("表单填写有误,重新填写!");
+                		}
+                    });
+                });
+                
+              
+                var table = $('#datatable-buttons').DataTable({
+                    processing: true,
+                    serverSide: true,//服务器处理后台分页
+                    dom: Css.getDom(),
+                    language: Css.getLaguage(),
+                    ordering:false,
+                    language: {  
+                        "processing": "正在处理中...",  
+                        "lengthMenu": "显示 _MENU_ 项结果",  
+                        "zeroRecords": "没有匹配结果",  
+                        "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",  
+                        "infoEmpty": "显示第 0 至 0 项结果，共 0 项",  
+                        "infoFiltered": "(由 _MAX_ 项结果过滤)",  
+                        "infoPostFix": "",  
+                        "search": "搜索:",  
+                        "url": "",  
+                        "emptyTable": "表中数据为空",  
+                        "loadingRecords": "载入中...",  
+                        "infoThousands": ",",  
+                        "paginate": {  
+                            "first": "首页",  
+                            "previous": "上页",  
+                            "next": "下页",  
+                            "last": "末页"  
+                        },  
+                        "aria": {  
+                            "sortAscending": ": 以升序排列此列",  
+                            "sortDescending": ": 以降序排列此列"  
+                        }  
+                    },
+                    ajax: {
+                        "url": "/dict/queryAll",
+                        "data": function( sDict ) {
+                        	sDict.code = $("#sDict_code").val();
+                        	sDict.name = $("#sDict_name").val();
+                        	sDict.parentId=$("#sDict_parentId").val();
+                        }
+                        ,"dataSrc": "data"
+                              },
+                    columns: [
+                        {
+                            "sClass": "text-center",
+                            "data": "uuid",
+                            "bSortable": false,
+                            "searchable": false,
+                            "render": function (data, type, row, meta) {
+                                return '<input type="checkbox" name="sDictCheck" class="checkchild"  value="' + data + '" />';
+                            },
+                            
+                            
+                        },
+                        {"data":  null},
+                        {"data": "code"},
+                        {"data": "name"},
+                        {"data": "remark" },
+                        {"data": "parentId","visible":false}
+                       
+                    ],
+                    columnDefs: [
+                    	{
+                    		targets: [0,1],
+         					orderable: false
+         					
+         				},
+         			{
+         					defaultContent: '', targets: ['_all']
+         				},
+                        {
+                            targets: 1,
+                        	width: '20%',
+                            render: function (data, type, row, meta) {
+                              var data = '<button type="button" class="btn btn-danger btn-bordred waves-effect btn-trans m-r-5" onclick=delSDict("' + row.uuid + '")>删除</button>' +
+                                '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" data-toggle="modal" data-target="#myModal" onclick=updSDict("' + row.uuid + '")>修改</button>'+
+                                '<button type="button" class="btn btn-success  btn-bordred waves-effect btn-trans m-r-5"  onclick="postMaintenance(\'' + row.uuid + '\')">字典项</button>';
+                                return data;
+                            }
+                        },
+        		
+                    ]
+                })
+            	table.buttons().container().appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+            
+            	$(".checkall").click(function () {
+            	      var check = $(this).prop("checked");
+            	      $(".checkchild").prop("checked", check);
+            	});
+             });
+            function getDictAdd(){
+            	var parentId =$("#parentId").val();
+            	   $("#parentId1").val(parentId);
+            	    $('#myModal1').modal('show');            
+            }
+            
+            
+            
+            function postMaintenance(uuid) {
+                content = '<div id="dict_manager_tab">' +
+                    '<input id="uuid" type="hidden" name="uuid" value="' + uuid + '">' +
+                    '<div class="col-12 m-b-15">' +
+                    '<button id="add_post_btn" type="button" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15" onclick=getDictSecAdd()>' +
+                    '<i class="fa fa-plus"></i> <span>添加字典</span>' +
+                    '</button>' +
+                    '<button id="batch_delrole_btn" type="button" onclick="delDict(\'\')" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-r-15 disabled">' +
+                    '<i class="mdi mdi-close"></i> <span>批量删除</span>' +
+                    '</button>' +
+                    '</div>' +
+                    '<table id="dict-datatable-buttons" class="table table-striped table-bordered " cellspacing="0" width="100%">' +
+                    '<thead>' +
+                    '<tr style="width: 100%">' +
+                    '<th><input type="checkbox"  class="check-all text-center" group="postCheck"></th>' +
+                    '<th>操作</th>' +
+                    '<th>字典编码</th>' +
+                    '<th>字典名称</th>' +
+                    '<th>字典描述</th>' +
+                    '</tr>' +
+                    '</thead>' +
+                    '<tbody>' +
+                    '</tbody>' +
+                    '</table>' +
+                    '</div>';
+                options = new TabOption("添加字典", "tab_nav", "dict_manager", "tab-content", content);
+                Css.addTab(options);//添加Tab
+                var roleTable = $('#dict-datatable-buttons').DataTable({
+                	  //scrollY: 500,//垂直滚动条
+                      //scrollX: true,//水平滚动条
+                      processing: true,
+                      serverSide: true,//服务器处理分页
+                      ordering: false,
+                      destroy: true,
+                      dom: Css.getDom(),
+                      language: Css.getLaguage(),
+                    ajax: {
+                        "url": "/dict/queryDictChildren",
+                        "data": function (data) {
+                            data.uuid = uuid;
+                        },
+                        "dataSrc": "data"
+                    },
+                    columns: [
+                        {"data": null},
+                        {"data": null},
+                        {"sDict": "0"},
+                        {"sDict": "1"},
+                        {"sDict": "2"}
+                       
+                    ],
+                    columnDefs: [
+                        {
+                            targets: 0,"sClass": "text-center",
+                            render: function (data, type, row, meta) {
+                                return data = '<input type="checkbox"  name="postCheck" id="postCheck" value="' + data[0] + '" >';
+                            },orderable: false
+                        },
+                        {
+                            targets: 1,
+                            render: function (data, type, row, meta) {
+                                return data = '<button type="button" class="btn btn-danger btn-bordred waves-effect btn-trans m-r-5" onclick=delDict1("' + data[0] + '")>删除</button>'+
+                                '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" data-toggle="modal" data-target="#myModal" onclick=updSDict("' + data[0] + '")>修改</button>';
+                               
+                            }
+                        },
+                    ]
+                });
+                $("#tab_content_home table th:eq(1)").click();
+            }
+            /*初始化岗位列表*/
+            addPosttable = $('#dict-datatable-buttons').DataTable({
+                scrollY: 500,//垂直滚动条
+                scrollX: true,//水平滚动条
+                processing: true,
+                serverSide: true,//服务器处理
+                ordering: false,
+                dom: Css.getDom(),
+                language: Css.getLaguage(),
+                ajax: {
+                    "url": "/dict/queryDictChildren",
+                    "data": function (sDict) {
+                    	sDict.code = "";
+                    	sDict.name = "";
+                    },
+                    "dataSrc": "data"
+                },
+                columns: [
+                    {"data": null},
+                    {"data": null},
+                    {"sDict": "code"},
+                    {"sDict": "name"},
+                    {"sDict": "remark"}
+                    
+                ],
+                columnDefs: [
+                    {
+                        targets: 0,"sClass": "text-center",
+                        render: function (data, type, row, meta) {
+                            return data = '<input type="checkbox"  class="checkchild" id="addPostId" name="addPostId" value="' + data[0] + '">'
+                        },orderable: false
+                    },
+                    {
+                        targets: 1,
+                        visible: false
+                    }
+                ]
+            });
+            $("#myModal1 table th:eq(1)").click();
+            
+            function getDictSecAdd(){
+            	var parentId =$("#uuid").val();
+            	   $("#parentId1").val(parentId);
+            	    $('#myModal1').modal('show');            
+            }
+            
+            function delDict1(uuid) {
+                var csrf_taken = $("#csrf_taken").val();
+                Css.ajax("POST", "/dict/del", {
+                    "uuid": uuid,
+                    "_csrf": csrf_taken
+                }, function (result) {
+                    if (result.success == "1") {
+                        $("#dict-datatable-buttons").DataTable().ajax.reload();//刷新列表
+                    } else {
+                        alert("删除有误!");
+                    }
+                });
+            }   
+            function delDict() {
+            	 if( $("#postCheck:checked").length==0) {
+			    		alert("请选择至少一项！");
+			    		  return;
+		           }
+              // 批量选择
+    		if(confirm("确定要删除所选系统？")) {
+    		var checkedList = new Array();
+    		$("#postCheck:checked").each(function() {
+    		   checkedList.push($(this).val());
+    		   });
+    		$.ajax({
+    		type: "GET",
+    		url: "/dict/deletemore",
+    		data: {'ids':checkedList.toString()},
+    		 success: function(result) {
+    			 if(result.success=="1") {
+    				 $("[name ='sysCheck']:checkbox").attr("checked", false);
+    				 $("#dict-datatable-buttons").DataTable().ajax.reload();//刷新列表
+         		} else {
+         			alert("删除失败！");
+         		}
+    	             }
+    		     });
+    		   }
+            }
+            
+		  </script>
+		  <style>
+         
+         /* dataTables列内容居中 */  
+			.table>tbody>tr>td{  
+			        text-align:center;   
+			}  
+  
+		/* dataTables表头居中 */  
+		.table>thead:first-child>tr:first-child>th{  
+		        text-align:center;  
+		}  
+         </style>
+
+</html>

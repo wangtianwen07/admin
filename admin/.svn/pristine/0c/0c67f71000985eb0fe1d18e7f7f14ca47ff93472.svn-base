@@ -1,0 +1,285 @@
+/**
+ * Copyrigth(c) Css Team
+ * All rights reserved
+ */
+package com.css.mgr.admin.ctrl.file;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.css.mgr.admin.common.IDUtil;
+import com.css.mgr.admin.common.JsonUtil;
+import com.css.mgr.admin.common.StringUtil;
+import com.css.mgr.admin.dao.pojo.SFile;
+import com.css.mgr.admin.srv.file.IFileService;
+import com.css.mgr.base.CssController;
+import com.css.mgr.conf.FileUtils;
+import com.css.mgr.conf.Md5Utils;
+
+/**
+ * @author wangtianwen 2018年3月2日
+ */
+@Controller
+@RequestMapping("/file")
+public class FileController extends CssController {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Value("${file.local.dir}")
+	private String fileLocaldir;
+
+	@Value("${file.tomcat.dir}")
+	private String fileTomcatdir;
+	@Autowired
+	private IFileService fileService;
+
+	@RequestMapping(value = "/upload", method = RequestMethod.POST)
+	@ResponseBody
+	public String upload(MultipartFile file, HttpServletRequest request) {
+		String fileBusinessType = request.getParameter("fileBusinessType");
+		String bId = request.getParameter("bId");
+		String readableFileSize = request.getParameter("readableFileSize");
+		logger.info("uploadfile:" + file);
+		logger.info("fileBusinessType:" + fileBusinessType);
+		logger.info("bId:" + bId);
+		logger.info("readableFileSize:" + readableFileSize);
+		StringBuilder fileUuid = new StringBuilder();
+		if (!file.isEmpty()) {
+			try {
+				// 文件保存路径
+				String filePath = fileLocaldir + File.separator + fileBusinessType;
+				String fileMd5Name = Md5Utils.md5(file.getOriginalFilename()+System.currentTimeMillis());
+				String extName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+				fileService.saveDisk(file, filePath,fileMd5Name+extName);
+
+				SFile attach = new SFile();
+				attach.setUuid(IDUtil.getId());
+				attach.setName(file.getOriginalFilename());
+				attach.setbId(bId);
+				attach.setFileBusinessType(fileBusinessType);
+				attach.setMd5(fileMd5Name);
+				attach.setUrl(fileBusinessType + File.separator + fileMd5Name + extName);
+				attach.setUploadTime(new Date());
+				attach.setUserId(super.getUser().getUuid());
+				attach.setUserName(super.getUser().getLoginName());
+				attach.setReadableFileSize(readableFileSize);
+				attach.setFileSize(String.valueOf(file.getSize()));
+				attach.setExtName(extName);
+				fileUuid.append(fileService.saveDB(attach));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return fileUuid.toString();
+	}
+
+	//视频上传到tomcat目录下
+	@RequestMapping(value = "/uploadTomcat", method = RequestMethod.POST)
+	@ResponseBody
+	public String uploadTomcat(MultipartFile file, HttpServletRequest request) {
+		String fileBusinessType = request.getParameter("fileBusinessType");
+		String bId = request.getParameter("bId");
+		String readableFileSize = request.getParameter("readableFileSize");
+		logger.info("uploadfile:" + file);
+		logger.info("fileBusinessType:" + fileBusinessType);
+		logger.info("bId:" + bId);
+		logger.info("readableFileSize:" + readableFileSize);
+		StringBuilder fileUuid = new StringBuilder();
+		if (!file.isEmpty()) {
+			try {
+				// 文件保存路径
+				String tt = FileUtils.getClassPath("static");
+				String filePath = tt + File.separator + fileTomcatdir + File.separator + fileBusinessType;
+				String fileMd5Name = Md5Utils.md5(file.getOriginalFilename()+System.currentTimeMillis());
+				String extName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+				fileService.saveDisk(file, filePath,fileMd5Name+extName);
+
+				SFile attach = new SFile();
+				attach.setUuid(IDUtil.getId());
+				attach.setName(file.getOriginalFilename());
+				attach.setbId(bId);
+				attach.setFileBusinessType(fileBusinessType);
+				attach.setMd5(fileMd5Name);
+				attach.setUrl(fileBusinessType + File.separator + fileMd5Name + extName);
+				attach.setUploadTime(new Date());
+				attach.setUserId(super.getUser().getUuid());
+				attach.setUserName(super.getUser().getLoginName());
+				attach.setReadableFileSize(readableFileSize);
+				attach.setFileSize(String.valueOf(file.getSize()));
+				attach.setExtName(extName);
+				fileUuid.append(fileService.saveDB(attach));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return fileUuid.toString();
+	}
+	
+	@ResponseBody
+	@RequestMapping(value="/generateThumbnails",method=RequestMethod.POST)
+	public String generateThumbnails(String fileUuids,int height) {
+		if(StringUtil.isEmpty(fileUuids)) {
+			return JsonUtil.error("文件参数不能为空").toString();
+		}
+		List<SFile> orginalPics = fileService.generateThumbnails(fileUuids,fileLocaldir,height);
+		for(SFile orginalPic :orginalPics) {
+			SFile thumbnailFile = new SFile();
+			thumbnailFile.setUuid(IDUtil.getId());
+			thumbnailFile.setbId(orginalPic.getbId());
+			thumbnailFile.setExtName(orginalPic.getExtName());
+			thumbnailFile.setFileBusinessType(orginalPic.getFileBusinessType()+"Thumbnails");
+			thumbnailFile.setName(orginalPic.getName());
+			thumbnailFile.setUploadTime(new Date());
+			thumbnailFile.setMd5(orginalPic.getMd5());
+			thumbnailFile.setUrl(orginalPic.getFileBusinessType()+File.separator+"Thumbnails"+File.separator+orginalPic.getMd5()+orginalPic.getExtName());
+			thumbnailFile.setUserId(orginalPic.getUserId());
+			thumbnailFile.setUserName(orginalPic.getUserName());
+			fileService.saveDB(thumbnailFile);
+		}
+		return JsonUtil.success("成功生成所有缩略图").toString();
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/del", method = RequestMethod.POST)
+	public String del(String sfileUuid) {
+		return fileService.delFile(sfileUuid).toString();
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	public String list(String bId, String fileBusinessType) {
+		return fileService.listFile(bId, fileBusinessType).toString();
+	}
+
+	@RequestMapping(value = "/get", method = RequestMethod.GET)
+	public String get(String uuid, Model model) {
+		SFile sFile = fileService.findByUuid(uuid);
+		model.addAttribute("sfileUuid", sFile.getUuid());
+		model.addAttribute("fileName", sFile.getName());
+		model.addAttribute("fileSize", sFile.getReadableFileSize());
+		return "htmltpl/fileList";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/syncBId", method = RequestMethod.POST)
+	public String syncBId(String bId, @RequestParam(value = "sfileUuids[]") String[] sfileUuids) {
+		return fileService.syncBId(bId, sfileUuids).toString();
+	}
+
+	@RequestMapping(value="/getImg", method = RequestMethod.GET)
+	public void getImg(String imgUuid, HttpServletRequest request, HttpServletResponse response,
+			Model model) {
+		if(StringUtil.isEmpty(imgUuid)) return; 
+		//读取图片二进制流
+		SFile sFile = fileService.findByUuid(imgUuid);
+		String filePath = fileLocaldir + File.separator + sFile.getUrl();
+		byte[] data = changeFileToByte(filePath);
+		if(data==null){
+			logger.info(">>>"+filePath+"--未找到!");
+			return;
+		}
+		response.setContentType("application/x-img");
+		response.setCharacterEncoding("utf-8");
+		try {
+
+			OutputStream outputStream = response.getOutputStream();
+			InputStream in = new ByteArrayInputStream(data);
+
+			int len = 0;
+			byte[] buf = new byte[1024];
+			while ((len = in.read(buf, 0, 1024)) != -1) {
+				outputStream.write(buf, 0, len);
+			}
+			in.close();
+			outputStream.flush();
+			outputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	@RequestMapping(value="/getThumbnail", method = RequestMethod.GET)
+	public void getThumbnail(String imgUuid, HttpServletRequest request, HttpServletResponse response,
+			Model model) {
+		if(StringUtil.isEmpty(imgUuid)) return; 
+		//读取图片二进制流
+		SFile sFile = fileService.findThumbnailByUuid(imgUuid);
+		String filePath = fileLocaldir + File.separator + sFile.getUrl();
+		byte[] data = changeFileToByte(filePath);
+		response.setContentType("application/x-img");
+		response.setCharacterEncoding("utf-8");
+		try {
+
+			OutputStream outputStream = response.getOutputStream();
+			InputStream in = new ByteArrayInputStream(data);
+
+			int len = 0;
+			byte[] buf = new byte[1024];
+			while ((len = in.read(buf, 0, 1024)) != -1) {
+				outputStream.write(buf, 0, len);
+			}
+			outputStream.close();
+		} catch (Exception e) {
+			logger.info("该图片不存在");
+		}
+	}
+	private byte[] changeFileToByte(String filePath)  
+	    {  
+	        byte[] buffer = null;  
+	        try  
+	        {  
+	            File fileZip = new File(filePath);  
+	            if (!fileZip.exists())  
+	            {  
+	                logger.debug(".zip格式文件不存在。");  
+	                return null;  
+	            }  
+	            FileInputStream fis = new FileInputStream(fileZip);  
+	              
+	            ByteArrayOutputStream bos = new ByteArrayOutputStream(1000);  
+	              
+	            byte[] b = new byte[1000];  
+	            int n;  
+	            //每次从fis读1000个长度到b中，fis中读完就会返回-1  
+	            while ((n = fis.read(b)) != -1)  
+	            {  
+	                bos.write(b, 0, n);  
+	            }  
+	            fis.close();  
+	            bos.close();  
+	            buffer = bos.toByteArray();  
+	        }  
+	        catch (FileNotFoundException e)  
+	        {  
+	            e.printStackTrace();  
+	        }  
+	        catch (IOException e)  
+	        {  
+	            e.printStackTrace();  
+	        }  
+	        return buffer;  
+	    }  
+}

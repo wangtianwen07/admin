@@ -1,0 +1,1 @@
+alter table s_post change column s_unit_uuid SUNIT_ID varchar(32);

@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+</head> 
+<body>
+<div class="file-row dz-image-preview dz-processing dz-success dz-complete" id="">
+  <input name="sfileUuid" type="hidden" th:value="${sfileUuid}">
+  <!-- This is used as the file preview template -->
+  <div>
+      <span class="preview"><img data-dz-thumbnail="" alt="a.png" src="data:image/png;base64,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"></span>
+  </div>
+  <div>
+      <p class="name" data-dz-name="" th:text="${fileName}"></p>
+      <strong class="error text-danger" data-dz-errormessage=""></strong>
+  </div>
+  <div>
+      <p class="size" data-dz-size="" th:text="${fileSize}"></p>
+      <div aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="progress progress-striped active" role="progressbar">
+        <div class="progress-bar progress-bar-success" data-dz-uploadprogress="" style="width: 100%;"></div>
+      </div>
+  </div>
+  <div>
+    <button class="btn btn-danger delete">
+      <i class="glyphicon glyphicon-trash"></i>
+      <span>删除</span>
+    </button>
+  </div>
+</div>
+</body>
+</html>

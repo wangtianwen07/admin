@@ -1,0 +1,104 @@
+package com.css.mgr.aop;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.StringUtils;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import com.css.mgr.admin.common.IDUtil;
+import com.css.mgr.admin.srv.log.SLogService;
+import com.css.mgr.base.CssController;
+import com.css.mgr.base.dao.pojo.SLog;
+import com.css.mgr.base.dao.pojo.SUser;
+
+/**
+ * 单例模式下的饿汉模式，不会有线程安全问题。
+ * 此处存在日志丢失的情况：当容器停止时，此时sLogList未满50的日志会丢失。
+ * @author wangtianwen
+ * 2018年3月10日
+ */
+@Aspect
+@Component
+public class WebLogAspect {
+
+    private static List<SLog> sLogList=new ArrayList<SLog>();
+    private SLog sLog;
+
+    @Autowired
+    private SLogService sLogService;
+
+    @Pointcut("execution(public * com.css..*.ctrl..*.*(..))")
+    public void webLog(){}
+
+
+    @Before("webLog()")
+    public void doBefore(JoinPoint joinPoint) throws Throwable {
+// 接收到请求，记录请求内容
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes.getRequest();
+        sLog=new SLog();
+        sLog.setArgs(Arrays.toString(joinPoint.getArgs()));
+        sLog.setClassMethod(joinPoint.getSignature().getDeclaringTypeName() + "." + joinPoint.getSignature().getName());
+        sLog.setIp(request.getRemoteAddr());
+        sLog.setUuid(IDUtil.getId());
+        sLog.setRequestTime(new Date());
+        sLog.setRequestType(request.getMethod());
+        sLog.setUrl(request.getRequestURL().toString());
+        SUser sUser=CssController.getUser();
+        if(sUser!=null){
+        	sLog.setUserId(sUser.getUuid());
+        	sLog.setUserName(sUser.getRealName());
+        }
+
+
+    }
+
+    @AfterReturning(returning = "ret", pointcut = "webLog()")
+    public void doAfterReturning(Object ret) throws Throwable {
+    	// 处理完请求，返回内容
+    	if(ret !=null) sLog.setResponse(ret.toString());
+        sLogList.add(sLog);
+        if(sLogList.size()>=50){
+            sLogService.save(sLogList);
+            System.out.println("日志同步数据库！");
+            sLogList.clear();
+            //sLogList=new ArrayList<SLog>();这里new了一个新的对象，在高并发的多线程环境下，也许存在线程安全问题？
+        }
+    }
+    
+    /*
+     * 经过测试，此方法并不可行，当容器停止时（无论是通过tomcat的界面stop还是直接叉掉cmd窗口），此时sLogList.size==0
+     * @PreDestroy  
+    public void destory() {
+    	System.out.println("容器销毁时保存日志！");
+    	//容器销毁时保存日志，防止日志丢失
+    	sLogService.save(sLogList);
+    }  
+*/
+    @AfterThrowing(throwing="ex",pointcut="webLog()")
+    public void doRecoveryActions(Throwable ex){
+        sLog.setResponse(ex.getMessage());
+        sLogList.add(sLog);
+        if(sLogList.size()>=50){
+            sLogService.save(sLogList);
+            System.out.println("日志同步数据库！");
+            sLogList.clear();
+            //sLogList=new ArrayList<SLog>();
+        }
+    }
+
+}

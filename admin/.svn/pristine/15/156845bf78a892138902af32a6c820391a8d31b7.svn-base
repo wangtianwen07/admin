@@ -1,0 +1,106 @@
+/**
+ * Copyrigth(c) Css Team
+ * All rights reserved
+ */
+package com.css.mgr.admin.srv.post.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.css.mgr.admin.dao.repository.SPostDao;
+import com.css.mgr.admin.srv.post.IPostService;
+import com.css.mgr.base.dao.pojo.SPost;
+
+import net.sf.json.JSONObject;
+
+
+/**
+ * @author wangtianwen
+ * 2018年1月22日
+ */
+@Service("postService")
+@Transactional
+public class PostServiceImpl implements IPostService{
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private SPostDao sPostDao;
+	
+	@Override
+	public Page<SPost> findAll(JSONObject paramJson,Pageable pageable) {
+		Page<SPost> page = sPostDao.findAll(new Specification<SPost>() {
+			@Override
+			public Predicate toPredicate(Root<SPost> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+				List<Predicate> list = new ArrayList<Predicate>();
+				if(StringUtils.isNotEmpty(paramJson.getString("code"))) {
+					list.add(cb.like(root.get("code").as(String.class), "%" + paramJson.getString("code") + "%"));
+				}
+				if(StringUtils.isNotEmpty(paramJson.getString("name"))) {
+					list.add(cb.like(root.get("name").as(String.class), "%" + paramJson.getString("name") + "%"));
+				}
+				Predicate[] p = new Predicate[list.size()];
+				return cb.and(list.toArray(p));
+			}
+		},pageable);
+		if(page!=null) logger.info("findAll size:"+page.getTotalElements());
+		return page;
+	}
+	
+	@Override
+	public Page<SPost> listSerach(JSONObject paramJson,String searchValue, Pageable pageable) {
+		 Page<SPost> page = sPostDao.findAll(new Specification<SPost>() {
+				@Override
+				public Predicate toPredicate(Root<SPost> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+					Predicate pCode = cb.like(root.get("code").as(String.class), "%" + paramJson.getString("code") + "%");
+					Predicate pName = cb.like(root.get("name").as(String.class), "%" + paramJson.getString("name") + "%");
+					
+					List<Predicate> list = new ArrayList<Predicate>();
+					
+					list.add(cb.like(root.get("code").as(String.class), "%" + searchValue + "%"));
+					list.add(cb.like(root.get("name").as(String.class), "%" + searchValue + "%"));
+					list.add(cb.like(root.get("rank").as(String.class), "%" + searchValue + "%"));
+					list.add(cb.like(root.get("remark").as(String.class), "%" + searchValue + "%"));
+					list.add(cb.like(root.get("unitId").as(String.class), "%" + searchValue + "%"));
+					list.add(cb.like(root.get("useType").as(String.class), "%" + searchValue + "%"));
+					Predicate[] p = new Predicate[list.size()];
+					
+					query.where(cb.and(pCode,pName,cb.or(list.toArray(p))));
+		            return query.getRestriction();
+				}
+			},pageable);
+			if(page!=null) logger.info("postFilteredPage size:"+page.getTotalElements());
+			return page;
+	}
+
+	@Override
+	public SPost save(SPost sPost) {
+		return sPostDao.save(sPost);
+	}
+
+	@Override
+	public SPost getSPostByUuid(String uuid) {
+		return sPostDao.findOne(uuid);
+	}
+
+	@Override
+	public void delByUuid(String uuid) {
+		sPostDao.delete(uuid);
+	}
+
+	
+}

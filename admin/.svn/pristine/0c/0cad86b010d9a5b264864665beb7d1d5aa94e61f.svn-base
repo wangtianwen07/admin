@@ -1,0 +1,206 @@
+package com.css.mgr.admin.pojo;
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+@Entity
+@Table(name = "gh_zz_apply_trade")
+public class GhZzApplyTrade implements java.io.Serializable{
+		// Fields
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+		@Id
+		@Column(name = "GH_ZZ_APPLY_TRADE_UUID")
+		private String ghZzApplyTradeUuid;
+		@Column(name = "GH_G_TRADE_UNION_UUID")
+		private String ghGTradeUnionUuid;
+		@Column(name = "APPLICATION_DATE")
+		private Date applicationDate;
+		@Column(name = "APPLICATION_TYPE")
+		private String applicationType;
+		@Column(name = "PROGRAM_ANNEX")
+		private String programAnnex;
+		@Column(name = "DRAFT_STATUS")
+		private String draftStatus;
+		@Column(name = "USER_BUSI_TYPE")
+		private String userBusiType;
+		@Column(name = "GH_D_COMPANY_UUID")
+		private String ghDCompanyUuid;
+		@Column(name = "USER_ID")
+		private String userId;
+		@Column(name = "link")
+		private Integer link;
+
+		// Constructors
+
+		/** default constructor */
+		public GhZzApplyTrade() {
+		}
+
+		/** full constructor */
+		public GhZzApplyTrade(String ghGTradeUnionUuid, Date applicationDate,
+				String applicationType, String programAnnex, String draftStatus) {
+			this.ghGTradeUnionUuid = ghGTradeUnionUuid;
+			this.applicationDate = applicationDate;
+			this.applicationType = applicationType;
+			this.programAnnex = programAnnex;
+			this.draftStatus = draftStatus;
+		}
+
+		// Property accessors
+		/**
+		 * 新建、换届主键
+		 */
+		public String getGhZzApplyTradeUuid() {
+			return this.ghZzApplyTradeUuid;
+		}
+		/**
+		 * 新建、换届主键
+		 */
+		public void setGhZzApplyTradeUuid(String ghZzApplyTradeUuid) {
+			this.ghZzApplyTradeUuid = ghZzApplyTradeUuid;
+		}
+		/**
+		 * 申请时间
+		 */
+		public Date getApplicationDate() {
+			return this.applicationDate;
+		}
+		/**
+		 * 申请时间
+		 */
+		public void setApplicationDate(Date applicationDate) {
+			this.applicationDate = applicationDate;
+		}
+		/**
+		 * 申请类型
+		 */
+		public String getApplicationType() {
+			return this.applicationType;
+		}
+		/**
+		 * 申请类型
+		 */
+		public void setApplicationType(String applicationType) {
+			this.applicationType = applicationType;
+		}
+		/**
+		 * 方案附件
+		 */
+		public String getProgramAnnex() {
+			return this.programAnnex;
+		}
+		/**
+		 * 方案附件
+		 */
+		public void setProgramAnnex(String programAnnex) {
+			this.programAnnex = programAnnex;
+		}
+		/**
+		 * 是否草稿
+		 */
+		public String getDraftStatus() {
+			return this.draftStatus;
+		}
+
+		/**
+		 * 是否草稿
+		 */
+		public void setDraftStatus(String draftStatus) {
+			this.draftStatus = draftStatus;
+		}
+
+		public String getGhGTradeUnionUuid() {
+			return ghGTradeUnionUuid;
+		}
+
+		public void setGhGTradeUnionUuid(String ghGTradeUnionUuid) {
+			this.ghGTradeUnionUuid = ghGTradeUnionUuid;
+		}
+
+/*		@Override
+		public String getEntityId() {
+			return ghZzApplyTradeUuid;
+		}
+
+		@Override
+		public String getEntityName() {
+			if (CommonConstant.APPLICATION_TYPE_NEW.equals(applicationType)) {
+				GhDCompany company=QueryCache.get(GhDCompany.class, ghDCompanyUuid);
+				if(company != null){
+					return company.getCompanyName()+"-建会申请";
+				}
+				return "建会申请";
+			}
+			if (CommonConstant.APPLICATION_TYPE_GENERAL.equals(applicationType)) {
+				GhDCompany company=QueryCache.get(GhDCompany.class, ghDCompanyUuid);
+				if(company != null){
+					return company.getCompanyName()+"-换届申请";
+				}
+				return "换届申请";
+			}
+			return "";
+		}*/
+
+		/**
+		 * 用户业务类型
+		 * @return
+		 */
+		public String getUserBusiType() {
+			return userBusiType;
+		}
+		/**
+		 * 用户业务类型
+		 * @return
+		 */
+		public void setUserBusiType(String userBusiType) {
+			this.userBusiType = userBusiType;
+		}
+		/**
+		 * 创建单位id
+		 * @return
+		 */
+		public String getGhDCompanyUuid() {
+			return ghDCompanyUuid;
+		}
+		/**
+		 * 创建单位id
+		 * @return
+		 */
+		public void setGhDCompanyUuid(String ghDCompanyUuid) {
+			this.ghDCompanyUuid = ghDCompanyUuid;
+		}
+
+		public String getUserId() {
+			return userId;
+		}
+
+		public void setUserId(String userId) {
+			this.userId = userId;
+		}
+		/**
+		 * 所在环节
+		 * @return
+		 */
+		public Integer getLink() {
+			return link;
+		}
+		/**
+		 * 所在环节
+		 * @return
+		 */
+		public void setLink(Integer link) {
+			this.link = link;
+		}
+          /**
+		 * 获取工会名称
+		 *//*
+		public String getTradeUnionName(){
+			return GhGTradeUnionService.get(this.ghGTradeUnionUuid).getTradeUnionName();
+		}*/
+}

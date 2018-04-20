@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<!-- 
+模版使用方法：
+<head th:include="/templdate_head :: templateHead('首页')"></head>
+-->
+<head th:fragment="templateHead(title)">
+<title th:text="${title}"></title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+<!-- 图标 -->
+	    <link rel="shortcut icon" th:href="@{/css/adminto/images/favicon.ico}"></link>
+<!-- 自定义css样式 -->
+		<link rel="stylesheet" th:href="@{/css/css-style.css}"></link>
+<!-- App css -->
+        <link th:href="@{/css/adminto/css/bootstrap.min.css}" rel="stylesheet" type="text/css" ></link>
+        <link th:href="@{/css/adminto/css/icons.css}" rel="stylesheet" type="text/css" ></link>
+        <link th:href="@{/css/adminto/css/style.css}" rel="stylesheet" type="text/css" ></link>
+		<script th:src="@{/css/adminto/js/modernizr.min.js}"></script>
+<!-- jQuery  -->
+        <script th:src="@{/css/adminto/js/jquery.min.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/popper.min.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/bootstrap.min.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/detect.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/fastclick.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/jquery.blockUI.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/waves.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/jquery.nicescroll.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/jquery.slimscroll.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/jquery.scrollTo.min.js}" type="text/javascript"></script>
+<!-- App js -->
+        <script th:src="@{/css/adminto/js/jquery.core.js}" type="text/javascript"></script>
+        <script th:src="@{/css/adminto/js/jquery.app.js}" type="text/javascript"></script>
+<!-- Tree view js -->
+         <script th:src="@{/css/adminto/plugins/jstree/jstree.min.js}" type="text/javascript"></script>
+         <!-- <script th:src="@{/css/adminto/pages/jquery.tree.js}" type="text/javascript"></script> 需要在具体页面中引入，这里引入不起效-->
+</head>
+</html>

@@ -1,0 +1,33 @@
+package com.css.mgr.admin.dao.repository;
+
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+
+import com.css.mgr.base.dao.pojo.SDict;
+
+public interface SDictDao extends JpaRepository<SDict, String>,JpaSpecificationExecutor<SDict> {
+	
+	List<SDict> findByTableName(String tableName);
+    
+	@Query(value="select name from SDict u where tableName=?1 and code =?2")
+	String findByTableNameAndCode(String tableName,String code);
+	
+	
+	@Query(value="select name from SDict u where tableName=?1")
+	SDict findDictByTableName(String tableName);
+
+	List<SDict> findByParentId(String ParentId);
+     
+	
+	@Query(value="select u.uuid as uuid,u.parentId as parentId,u.code as code,u.name as name,u.remark as remark "
+			+ " from SDict u where u.parentId=?1")
+	public Page<SDict> findAllByParentId(String uuid,Pageable pageable);
+	
+	@Query(value="select u.code from SDict u where u.code=?1 ")
+	public String getCodeByCode(String code);
+	
+}

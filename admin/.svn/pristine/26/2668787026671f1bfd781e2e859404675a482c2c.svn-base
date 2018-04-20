@@ -1,0 +1,50 @@
+package com.css.mgr.admin.srv.file.impl;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.css.mgr.admin.common.JsonUtil;
+import com.css.mgr.admin.dao.pojo.SFile;
+import com.css.mgr.admin.dao.repository.SFileDao;
+import com.css.mgr.admin.srv.file.IFileService;
+
+import net.sf.json.JSONObject;
+
+/**
+ * 
+ * @author wangtianwen
+ * 2018年3月2日
+ */
+@Service("fileService")
+@Transactional
+public class FileServiceImpl implements IFileService {
+     
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+    private SFileDao sFileDao;
+
+	@Override
+	public String saveDB(SFile sFile) {
+		logger.info("sFile:",sFile);
+		sFile = sFileDao.save(sFile);
+		return sFile.getUuid();
+	}
+
+	@Override
+	public JSONObject delFile(String sfileUuid) {
+		if(StringUtils.isEmpty(sfileUuid)) {
+			JsonUtil.error("删除失败!");
+		}
+		sFileDao.delete(sfileUuid);
+		return JsonUtil.success("成功", null);
+	}
+
+
+	
+}

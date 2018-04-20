@@ -1,0 +1,48 @@
+package com.css.mgr.admin.srv.dict;
+
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.css.mgr.base.dao.pojo.SDict;
+
+import net.sf.json.JSONObject;
+
+public interface IDictService {
+		 //查询所有  
+	    public Page<SDict> findAll(JSONObject paramJson,Pageable pageable);
+     
+	    //根据父类id
+	    public List<SDict> findAllByParentId(String parentId);
+    
+	  //条件、分页查询
+	  	public Page<SDict> listSerach(JSONObject paramJson,String searchValue,Pageable pageable);
+	  	
+		//保存
+	    public SDict save(SDict sDict);
+	    
+	    //删除
+	    public void deleByuuid(String uuid);
+	    
+	    
+	    //根据id获取对象
+	    SDict getSdictById(String uuid);
+	    
+	    //不带参查询字典项
+	    public Page<List<SDict>> findSDictAll(String uuid,Pageable pageable);
+
+
+		public List<SDict> getDictType(String table);
+
+		
+		//根据code和tableName获取字典值
+		public String getDictTypeAndCode(String tableName,String code);
+		
+		public List<SDict> getDictByTableName(String tableName);
+
+		public List<SDict> findSDictAllByCode(String code);
+		
+		public JSONObject loadSelect(String tableName);
+		
+
+
+}

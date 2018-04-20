@@ -1,0 +1,451 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="card-box table-responsive">
+	<div class="col-xl-12">
+		<!-- Tab切换页 -->
+	    <ul id="tab_nav" class="nav nav-tabs">
+	        <li id="tab_li_home" class="nav-item">
+	            <a id="tab_a_home" href="#tab_content_home" data-toggle="tab" aria-expanded="false" class="nav-link active">
+	            	功能管理 
+	            </a>
+	        </li>
+	    </ul>
+	
+		<!-- Tab默认页 -->
+	    <div class="tab-content" id="tab-content">
+	        <div role="tabpanel" class="tab-pane fade active show" id="tab_content_home">
+	                     <div class="card m-b-20 card-body">
+	                      <form class="form-inline">
+	                      	<div class="col-2">
+	                                 <input type="text" class="form-control" id="sfunc_name" placeholder="请输入功能名称">
+	                             </div>
+	                          <div class="form-group mx-sm-3">
+	                              <input type="text" class="form-control" id="sfunc_type" placeholder="请输入功能类型">
+	                          </div>
+	                          <div class="form-group mx-sm-3">
+	                              <input type="text" class="form-control" id="sfunc_open" placeholder="请输入功能状态">
+	                          </div>
+	                          <button class="btn btn-primary" id="func_query_btn">模糊查询</button>
+	                      </form>
+	                		</div>
+	                		<div class="col-12 m-b-15">
+	                			<button id="add_btn" type="button" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15"  data-toggle="modal" data-target="#myModal"> 
+			                    	<i class="fa fa-plus"></i> <span>添加功能</span> 
+			                    </button>
+	                		</div>
+	                     <table id="func-datatable-buttons" class="table table-striped table-bordered" cellspacing="0" width="100%">
+	                         <thead>
+	                         <tr>
+	                         	<th>操作</th>
+	                         	<th>唯一编号</th>
+	                             <th>功能名称</th>
+	                             <th>功能类型</th>
+	                             <th>功能描述</th>
+	                             <th>状态</th>
+	                         </tr>
+	                         </thead>
+	                         <tbody>
+	                         </tbody>
+	                     </table>
+	        </div>
+	    </div>
+	</div>
+</div>
+
+<!-- 模态框 -->
+<div id="add_func_div">       
+  <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="max-width:700px;margin:70px auto">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myModalLabel">添加功能</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              </div>
+              <div class="modal-body">
+                  <div class="card-box">
+                     <div class="row">
+                         <div class="col-12">
+                             <div class="p-20">
+                                 <form id="sFunc_form" class="form-horizontal" role="form">
+                             		<input id="csrf_taken" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                             		<input id="uuid" type="hidden" name="uuid">
+                             		<input id="parentId" type="hidden" name="parentId">
+                             		<input id="sysId" type="hidden" name="sysId">
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">功能名称</label>
+                                         <div class="col-10">
+                                             <input type="text" id="name" name="name" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">功能类型</label>
+                                         <div class="col-10">
+                                             <input type="text" id="funcType" name="funcType" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">功能描述</label>
+                                         <div class="col-10">
+                                             <input type="text" id="remark" name="remark" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">状态</label>
+                                         <div class="col-10">
+                                             <input type="text" id="openflag"  name="openflag" class="form-control" >
+                                         </div>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+
+                     </div>
+                     <!-- end row -->
+                 </div>
+              </div>
+              <div class="modal-footer">
+                  <button id="close_btn" type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+                  <button id="func_save_btn" type="button" class="btn btn-primary waves-effect waves-light">保存</button>
+              </div>
+          </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+  </div>
+</div>
+
+<div id="add_res_div">       
+  <div id="myResModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="max-width:800px;margin:70px auto">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myResModalLabel">添加资源</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              </div>
+              <div class="modal-body">
+                  <div class="card-box">
+                     <div class="row">
+                         <div class="col-12">
+                             <div class="p-20">
+                                 <form id="sRes_form" class="form-horizontal" role="form">
+                             		<input type="hidden" name="funcId">
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">资源标识</label>
+                                         <div class="col-10">
+                                             <input type="text" id="resUuid" name="uuid" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">资源编码</label>
+                                         <div class="col-10">
+                                             <input type="text" id="resCode" name="resCode" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">资源名称</label>
+                                         <div class="col-10">
+                                             <input type="text" id="resName" name="resName" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">资源类型</label>
+                                         <div class="col-10">
+                                             <input type="text" id="resType"  name="resType" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">资源IP地址</label>
+                                         <div class="col-10">
+                                             <input type="text" id="resIp"  name="resIp" class="form-control" >
+                                         </div>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+
+                     </div>
+                     <!-- end row -->
+                 </div>
+              </div>
+              <div class="modal-footer">
+                  <button id="addRole_close_btn" type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+                  <button id="addRole_save_btn" type="button" class="btn btn-primary waves-effect waves-light">确认</button>
+              </div>
+          </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+  </div>
+</div>
+</body>
+
+<script type="text/javascript">
+			function addRes(event) {
+				//event.stopPropagation();//阻止事件冒泡
+				var roleTable = $('#addRole-datatable-buttons').DataTable({
+                    //scrollY: 500,//垂直滚动条
+                    scrollX: true,//水平滚动条
+                    //processing: true,
+                    //serverSide: true,//服务器处理
+                    ordering: true,
+                    retrieve: true,
+                    ajax: {
+                        "url": "/func/allRole",
+                        "dataSrc": "data"
+                    },
+                    columns: [
+                    	{"data": null},
+                    	{"data": "uuid"},
+                        {"data": "name"},
+                        {"data": "remark"}
+                    ],
+                    columnDefs: [
+                    	{
+         					targets: [0,1,3],
+         					orderable: false
+         				},
+                        {
+                            targets: 0,
+                            render: function (data, type, row, meta) {
+                                return data = '<div class="radio radio-success">' +
+                                '<input type="radio" name="addRole_radio" id="radio4" value="'+row.uuid+'">' +
+                                '<label for="radio4">' +
+                                '' +
+                                '</label>' +
+                            '</div>';
+                            }
+                        },
+         				{
+                        	targets: 1,
+                        	visible: true
+         				}
+                    ]
+                });
+			}
+			
+			//删除资源
+			function delRes(resUuid) {
+				console.log("resUuid:"+resUuid);
+				var csrf_taken = $("#csrf_taken").val();
+				//Css.ajax("POST","/func/cancelRole",{"_csrf":csrf_taken,"resUuid":resUuid},function(result){
+				Css.ajax("POST","/func/delRes",{"_csrf":csrf_taken,"resUuid":resUuid},function(result){
+            		if(result.success=="1") {
+            			$("#res-datatable-buttons").DataTable().ajax.reload();
+            		} else {
+            			alert("删除失败!");
+            		}
+                });
+			}
+			
+			//uuid:功能uuid
+			function resMgr(uuid) {
+				 //self.location.reload(); 
+				 
+				/**
+				 * tabTitle:Tab页标题
+				 * tabMainName:ul id
+				 * tabName：li名称，默认加前缀tab_li_，一起构成 li的id
+				 * tabContentMainName:tab-content的id
+				 * content：页面内容
+				 */
+				 content = '<div id="func_mgr_tab">' +
+          						'<input id="postUuid" type="hidden" name="postUuid" value="'+uuid+'">' +
+								'<div class="col-12 m-b-15">' +
+									'<button id="add_res_btn" onclick="addRes(event);" type="button" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15"  data-toggle="modal" data-target="#myResModal">' + 
+							    			'<i class="fa fa-plus"></i> <span>添加资源</span>'  +
+							        '</button>' +
+								'</div>' +
+							     '<table id="res-datatable-buttons" class="table table-striped table-bordered " cellspacing="0" width="100%">' +
+							         '<thead>' +
+								         '<tr style="width: 100%">' +
+								         	'<th>操作</th>' +
+								         	 '<th>资源标识</th>' +
+								             '<th>资源编码</th>' +
+								             '<th>资源名称</th>' +
+								             '<th>资源类型</th>' +
+								             '<th>资源IP地址</th>' +
+								         '</tr>' +
+							         '</thead>' +
+							         '<tbody>' +
+							         '</tbody>' +
+							     '</table>' +
+							'</div>';
+				 options=new TabOption("资源管理","tab_nav","func_mgr","tab-content",content);
+				 Css.addTab(options);//添加Tab
+				 var roleTable = $('#res-datatable-buttons').DataTable({
+	                    scrollX: true,//水平滚动条
+	                    ordering: true,
+	                    retrieve: true,
+	                    ajax: {
+	                        //"url": "/func/queryRole",
+	                        "url": "/func/queryRes",
+	                        "data": function(data) {
+	                        	data.funcId = uuid;
+	                        },
+	                        "dataSrc": "data"
+	                    },
+	                    columns: [
+	                    	{"data": null},
+	                    	{"data": "uuid"},
+	                        {"data": "resCode"},
+	                        {"data": "resName"},
+	                        {"data": "resType"},
+	                        {"data": "resIp"}
+	                    ],
+	                    columnDefs: [
+	                    	{
+	         					targets: [0,3,4,5],
+	         					orderable: false
+	         				},
+	                        {
+	                            targets: 0,
+	                            render: function (data, type, row, meta) {
+	                                return data = '<button type="button" class="btn btn-danger btn-bordred waves-effect btn-trans m-r-5" onclick=delRes("'+row.uuid+'")>删除</button>';
+	                            }
+	                        },
+	         				{
+	                        	targets: 1,
+	                        	visible: true
+	         				}
+	                    ]
+	                });
+			}
+
+			function updFunc(uuid) {
+				Css.ajax("GET","/func/get",{"uuid":uuid},function(result){
+            		if(result.success=="1") {
+            			var sFunc = result.sFunc;
+		        		$("#uuid").val(sFunc.uuid);
+		        		$("#parentId").val(sFunc.parentId);
+		        		$("#sysId").val(sFunc.sysId);
+		        		$("#name").val(sFunc.name);
+		        		$("#funcType").val(sFunc.funcType);
+		        		$("#remark").val(sFunc.remark);
+		        		$("#openflag").val(sFunc.openflag);
+            		} else {
+            			alert("获取信息失败");
+            		}
+                });
+			}
+			
+			function delFunc(uuid) {
+				var delFlag=confirm("确认删除吗？")
+				var csrf_taken = $("#csrf_taken").val();
+				var params = $("#sFunc_form").toJSON();
+				if(delFlag){
+					//Css.ajax("DELETE","/func/del",{"_csrf":csrf_taken,"uuid":uuid},function(result){不支持DELETE
+					//Css.ajax("DELETE","/func/del",params,function(result){ 不支持DELETE
+					Css.ajax("POST","/func/del",{"_csrf":csrf_taken,"uuid":uuid},function(result){
+	            		if(result.success=="1") {
+	            			var table = $('#func-datatable-buttons');
+	            			console.log(table);
+	            			$('#func-datatable-buttons').DataTable().draw();
+	            		} else {
+	            			alert("del失败!");
+	            		}
+	                });
+				}
+			}
+			
+			function roleQuery(event) {
+				event.stopPropagation();//阻止事件冒泡
+				console.log($('#res-datatable-buttons'));
+				$('#res-datatable-buttons').DataTable().draw();
+				
+				//event.stopPropagation();
+			}
+			
+            $(document).ready(function() {
+            	
+            	$("#addRole_save_btn").click(function(){
+            		var roleUuid = $("input[name='addRole_radio']:checked").val();
+            		var postUuid = $("#postUuid").val();
+            		var csrf_taken = $("#csrf_taken").val();
+            		console.log(roleUuid+":"+postUuid+":"+csrf_taken);
+                	Css.ajax("POST","/func/bindRole",{"roleUuid":roleUuid,"postUuid":postUuid,"_csrf":csrf_taken},function(result){
+                		if(result.success=="1") {
+	                    	$("#addRole_close_btn").trigger("click");//触发关闭事件
+    	                    $("#res-datatable-buttons").DataTable().ajax.reload();//刷新列表
+                		} else {
+                			alert("添加角色有误!");
+                		}
+                    });
+                });
+            	
+                $("#func_query_btn").click(function(){
+                	table.draw();
+                	return false;//阻止默认的跳转行为
+         		});
+                
+                $("#func_save_btn").click(function(){
+                	var funcUuid = $("#funcUuid").val();
+                	$("#parentId").val(funcUuid);
+                	var sysId = $("#checkedSysId").val();
+                	$("#sysId").val(sysId);
+                	var params = $("#sFunc_form").toJSON();
+                	console.log(params);
+                	Css.ajax("POST","/func/add",params,function(result){
+                		if(result.success=="1") {
+	                    	$("#close_btn").trigger("click");//触发关闭事件
+    	                    table.draw();
+                		} else {
+                			alert("表单填写有误,重新填写!");
+                		}
+                    });
+                });
+                
+                /*
+                *1.操作 第一列初始化时排序图标去不掉
+                *2.
+                */
+                //无法初始化的。。。
+                var table = $('#func-datatable-buttons').DataTable({
+                    //scrollY: 500,//垂直滚动条
+                    scrollX: true,//水平滚动条
+                    processing: true,
+                    serverSide: true,//服务器处理
+                    ordering: true,
+                    //buttons: ['copy', 'excel', 'pdf'],
+                    ajax: {
+                        "url": "/func/query",
+                        "data": function( sFunc ) {
+                        	sFunc.parentId = $("#funcUuid").val();                     	
+                        	sFunc.name = $("#sfunc_name").val();
+                        	sFunc.funcType = $("#sfunc_type").val();
+                        	sFunc.openflag = $("#sfunc_open").val();
+                        },
+                        "dataSrc": "data"
+                    },
+                    columns: [
+                    	{"data": null},
+                    	{"data": "uuid"},
+                        {"data": "name"},
+                        {"data": "funcType"},
+                        {"data": "remark"},
+                        {"data": "openflag"}
+                    ],
+                    columnDefs: [
+                    	{
+         					targets: [0,1,2,3,4,5],
+         					orderable: false
+         				},
+                        {
+                            targets: 0,
+                            render: function (data, type, row, meta) {
+                                return data = '<button type="button" class="btn btn-danger btn-bordred waves-effect btn-trans m-r-5" onclick=delFunc("'+row.uuid+'")>删除</button>' +
+                                '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" data-toggle="modal" data-target="#myModal" onclick=updFunc("'+row.uuid+'")>更新</button>' +
+                                '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" onclick=resMgr("'+row.uuid+'")>资源管理</button>';
+                            }
+                        },
+         				{
+                        	targets: 1,
+                        	visible: true
+         				}
+                    ]
+                });
+
+            	table.buttons().container()
+                        .appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+            	
+            } );
+
+        </script>
+
+</html>

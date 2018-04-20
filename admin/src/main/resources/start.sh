@@ -1,0 +1,1 @@
+nohup java -Djava.net.preferIPv4Stack=true -jar atom1.0.jar &

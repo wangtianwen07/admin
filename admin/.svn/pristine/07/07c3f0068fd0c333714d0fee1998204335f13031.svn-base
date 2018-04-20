@@ -1,0 +1,392 @@
+var Css={};
+Css.logout=function(){
+	$("#logout").submit();
+}
+Css.loadModel=function(a){
+	$("#maincontent").load(a.href);
+	
+	$.fn.toJSON = function()      
+	{      
+	   var o = {};      
+	   var a = this.serializeArray();      
+	   $.each(a, function() {  
+	       var name = this.name;  
+	       var value = this.value;  
+	       var paths = this.name.split(".");  
+	       var len = paths.length;  
+	       var obj = o;  
+	       $.each(paths,function(i,e){  
+	           if(i == len-1){  
+	               if (obj[e]) {      
+	                   if (!obj[e].push) {      
+	                       obj[e] = [obj[e]];      
+	                   }      
+	                   obj[e].push(value || '');      
+	               } else {      
+	                   obj[e] = value || '';      
+	               }  
+	           }else{  
+	               if(!obj[e]){  
+	                   obj[e] = {};  
+	               }  
+	           }  
+	           obj = o[e];  
+	       });                
+	   });
+	   return o; 
+	};  
+	return false;
+}
+/**
+ * 加载页面到指定的div
+ */
+Css.loadSpecModel=function(contentId,href){
+	$("#"+contentId).load(href);
+	
+	$.fn.toJSON = function()      
+	{      
+	   var o = {};      
+	   var a = this.serializeArray();      
+	   $.each(a, function() {  
+	       var name = this.name;  
+	       var value = this.value;  
+	       var paths = this.name.split(".");  
+	       var len = paths.length;  
+	       var obj = o;  
+	       $.each(paths,function(i,e){  
+	           if(i == len-1){  
+	               if (obj[e]) {      
+	                   if (!obj[e].push) {      
+	                       obj[e] = [obj[e]];      
+	                   }      
+	                   obj[e].push(value || '');      
+	               } else {      
+	                   obj[e] = value || '';      
+	               }  
+	           }else{  
+	               if(!obj[e]){  
+	                   obj[e] = {};  
+	               }  
+	           }  
+	           obj = o[e];  
+	       });                
+	   });
+	   return o; 
+	};  
+	return false;
+}
+
+Css.loadFirst=function(){
+	var a={href:'/first'};
+	Css.loadModel(a);
+}
+//加载下拉列表:根据字典编码加载其字典项
+Css.loadSelect = function(dom,tableName) {
+	Css.ajax("GET","/dict/loadSelect",{"tableName":tableName},function(result) {
+		$(result.data).each(function(index,element) {
+			var html = "<option value="+element.code+">"+ element.name +"</option>"
+			$(dom).append(html);
+		});
+	});
+}
+Css.ajax=function(method,url,param,callback,async){
+	if(async==undefined) async = true;
+	$.ajax({
+		type: method,
+		//contentType: 'application/json',
+        dataType: "json",
+        url:url,
+        data:param,
+        async: async,
+        success: function (result) {
+        	callback(result);
+        },
+        error: function(data) {
+        	if(data.status==403){
+        		alert("错误:未授权的请求！");
+        	}else{
+        		alert("error:"+data.responseText);
+        	}
+         }
+	});
+};
+
+Css.ajaxForText=function(method,url,param,callback,async){
+	if(async==undefined) async = true;
+	$.ajax({
+		type: method,
+        dataType: "text",
+        url:url,
+        data:param,
+        async: async,
+        success: function (result) {
+        	callback(result);
+        },
+        error: function(data) {
+        	if(data.status==403){
+        		alert("错误:未授权的请求！");
+        	}else{
+        		alert("error:"+data.responseText);
+        	}
+         }
+	});
+};
+/**
+ * Tab切换页对象
+ * tabTitle:Tab页标题
+ * tabMainName:ul id
+ * tabName：li名称，默认加前缀tab_li_，一起构成 li的id
+ * tabContentMainName:tab-content的id
+ * content：页面内容
+ * 案例：参考 src\main\resources\templates\admin\post\dir.html
+ */
+function TabOption(tabTitle,tabMainName,tabName,tabContentMainName,content)
+{
+	this.tabTitle=tabTitle;
+	this.tabMainName=tabMainName;
+	this.tabName=tabName;
+	this.tabContentMainName=tabContentMainName;
+	this.content=content;
+};
+//添加Tab页
+Css.addTab=function(options) {
+	if($("#"+options.tabMainName+" > #tab_li_"+options.tabName).length > 0) {//已经存在Tab
+		$("#tab_a_"+options.tabName).click();//模拟点击
+		$("#tab_content_" + options.tabName).addClass("tab-pane fade active show");
+	} else {
+		$("#"+options.tabMainName).append('<li id="tab_li_'+options.tabName+'" class="nav-item"><a id="tab_a_'+options.tabName+'" href="#tab_content_'+options.tabName+'" data-toggle="tab" aria-expanded="false" class="nav-link">'+ options.tabTitle +'<i class="fa fa-remove" onclick="new Css.closeTab(this,event)"></i></a>');
+		$("#" + options.tabContentMainName).append('<div role="tabpanel" class="tab-pane fade" id="tab_content_'+options.tabName+'">'+options.content+'</div>');
+		$("#tab_a_"+options.tabName).click();
+		$("#tab_content_" + options.tabName).addClass("tab-pane fade active show");
+	}
+};
+
+Css.htmlTpl=function(url,callback){
+	   $.ajax({
+		type: "get",
+	    url:url,
+	    data:{},
+	    async: false,
+	    dataType: "text",
+	    success: function (result) {
+	    	callback(result);
+	    },
+	    error: function(data) {
+	    	if(data.status==403){
+	    		alert("错误:未授权的请求！");
+	    	}else{
+	    		alert("error:"+data.responseText);
+	    	}
+	     }
+	});
+	}
+//关闭Tab页
+Css.closeTab=function(tab_i,event){
+	event.stopPropagation();//阻止事件冒泡
+    var li_id = $(tab_i).parent().parent().attr('id');
+    var id = li_id.replace("tab_li_","");
+    //如果关闭的是当前激活的TAB，激活他的前一个TAB
+    var ul = $(tab_i).parent().parent().parent().attr("id");
+    var activeParentLi = $("#"+ul +" li a.active").parent();
+    if (activeParentLi.attr("id") == li_id) {
+    	activeParentLi.prev().find("a").click();
+    	var activeParentLiId = activeParentLi.prev().attr("id").replace("tab_li_","");
+    	//显示起一个Tab的内容
+    	$("#tab_content_" + activeParentLiId).addClass("tab-pane fade active show");
+    	
+    }
+    //关闭TAB
+    $("#" + li_id).remove();
+    $("#tab_content_" + id).remove();
+}
+/**
+ *表单数据变成json
+ * pa : form表单 
+ * 
+ */
+Css.form2json=function(pa){
+	
+	var params = pa.serializeArray();
+	var v={};
+	for(var i=0;i<params.length;i++){
+		v[params[i].name]=params[i].value;
+	}
+	return v;
+}
+
+Css.apply=function(src,opt){
+	var s;
+	for(s in src){
+		opt[s]=src[s];
+	}
+}
+
+$('body').on('click', '.check-all', function () {
+    var $this = $(this);
+    var group = $this.attr('group');
+    $('input[name="' + group + '"]').prop('checked', $this.prop("checked"));
+})
+
+Css.getDom = function() {
+	var dom = "<'row'<'col-sm-12'tr>><'row'<'col-sm-2'l><'col-sm-2 dt-col-i'i><'col-sm-8'p>>";
+    return dom;
+}
+Css.getLaguage = function() {
+	var lag = {  
+	        "processing": "正在处理中...",  
+	        "lengthMenu": "显示 _MENU_ 项结果",  
+	        "zeroRecords": "没有匹配结果",  
+	        "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",  
+	        "infoEmpty": "显示第 0 至 0 项结果，共 0 项",  
+	        "infoFiltered": "(由 _MAX_ 项结果过滤)",  
+	        "infoPostFix": "",  
+	        "search": "搜索:",  
+	        "url": "",  
+	        "emptyTable": "表中数据为空",  
+	        "loadingRecords": "载入中...",  
+	        "infoThousands": ",",  
+	        "paginate": {  
+	            "first": "首页",  
+	            "previous": "上页",  
+	            "next": "下页",  
+	            "last": "末页"  
+	        },  
+	        "aria": {  
+	            "sortAscending": ": 以升序排列此列",  
+	            "sortDescending": ": 以降序排列此列"  
+	        }
+		};
+		return lag;
+}
+//同步附件，将bId关联到文件。
+Css.syncDropZone =function(bId) {
+	var sfileUuids = [];
+	$("#previews").find("input[name='sfileUuid']").each(function(index,element) {
+		sfileUuids.push($(element).val());
+	});
+	if(sfileUuids.length>0) {
+		Css.ajax("POST","/file/syncBId",{"_csrf":$("#csrf_taken").val(),"bId":bId,"sfileUuids":sfileUuids},function(result) {
+			//console.log(result);
+		});
+	}
+}
+//刷新dropzone 用法：1.Css.reloadDropZone()只清空 2.Css.reloadDropZone(bId,fileBuinessType)清空并载入历史上传文件
+Css.reloadDropZone = function(bId,fileBuinessType) {
+	//1.清空上传列表
+	$("#previews").empty();
+	if(bId && fileBuinessType) {
+		//加载曾经上传的文件
+		Css.ajax("GET","/file/list",{"bId":bId,"fileBusinessType":fileBuinessType},function(jsonStr) {
+			$(jsonStr.data).each(function(i,e) {
+				Css.ajaxForText("GET","/file/get",{"uuid":e.uuid},function(result){
+					$("#previews").append(result);
+				},false);
+				$(".delete").off("click");//解绑事件，避免多次绑定问题
+				$(".delete").on("click",function(){  
+					var sfileUuid = $(this).parent().parent().find("input[name='sfileUuid']").val();
+			    	Css.ajax("POST","/file/del",{"_csrf":$("#csrf_taken").val(),"sfileUuid":sfileUuid},function(jsonStr){
+			    	});
+			    	$(this).parent().parent().remove();
+				   return false;
+				});
+			});
+		});
+	}
+}
+//初始化文件上传组件,覆盖默认事件。
+Css.createDropZone = function(myDropzone) {
+	var previewNode = document.querySelector("#template");
+	previewNode.id = "";
+	var previewTemplate = previewNode.parentNode.innerHTML;
+	previewNode.parentNode.removeChild(previewNode);
+	myDropzone.options.previewTemplate = previewTemplate;
+	var previewsContainer = "#previews";
+	var clickable =  ".fileinput-button";
+	myDropzone.options.previewsContainer = previewsContainer;
+	myDropzone.options.clickable = clickable;
+	
+    myDropzone.on("addedfile", function(file) {
+      // Hookup the start button
+      file.previewElement.querySelector(".start").onclick = function() { 
+      	myDropzone.enqueueFile(file);
+      	return false;
+      };
+      
+      file.previewElement.querySelector(".delete").onclick = function() {
+    	var sfileUuid = $(this).parent().parent().find("input[name='sfileUuid']").val();
+    	Css.ajax("POST","/file/del",{"_csrf":$("#csrf_taken").val(),"sfileUuid":sfileUuid},function(jsonStr){
+    		//console.log(jsonStr.msg);
+    	});
+      	return false;
+      };
+    });
+
+    // Update the total progress bar
+    myDropzone.on("totaluploadprogress", function(progress) {
+      document.querySelector("#total-progress .progress-bar").style.width = progress + "%";
+    });
+
+    myDropzone.on("sending", function(file,xhr, formData) {
+	      // Show the total progress bar when upload starts
+	      document.querySelector("#total-progress").style.opacity = "1";
+	      // And disable the start button
+	      file.previewElement.querySelector(".start").setAttribute("disabled", "disabled");
+	      //添加额外参数
+	      formData.append("_csrf", $("#csrf_taken").val());
+	      formData.append("readableFileSize",file.previewElement.querySelector(".size").innerText);
+	      
+	      formData.append("bId",  $(".bId").val());
+	    });
+
+    myDropzone.on("success", function(file) {
+    	file.previewElement.childNodes[1].value=file.xhr.response;
+    });
+    
+    // Hide the total progress bar when nothing's uploading anymore
+    myDropzone.on("queuecomplete", function(progress) {
+      document.querySelector("#total-progress").style.opacity = "0";
+    });
+    
+    document.querySelector("#actions .start").onclick = function() {
+    	myDropzone.enqueueFiles(myDropzone.getFilesWithStatus(Dropzone.ADDED));
+    	return false;
+    };
+    
+    // Now fake the file upload, since GitHub does not handle file uploads
+    // and returns a 404
+
+    /*var minSteps = 6,
+        maxSteps = 60,
+        timeBetweenSteps = 100,
+        bytesPerStep = 100000;
+    myDropzone.uploadFiles = function(files) {
+      var self = this;
+
+      for (var i = 0; i < files.length; i++) {
+
+        var file = files[i];
+        totalSteps = Math.round(Math.min(maxSteps, Math.max(minSteps, file.size / bytesPerStep)));
+
+        for (var step = 0; step < totalSteps; step++) {
+          var duration = timeBetweenSteps * (step + 1);
+          setTimeout(function(file, totalSteps, step) {
+            return function() {
+              file.upload = {
+                progress: 100 * (step + 1) / totalSteps,
+                total: file.size,
+                bytesSent: (step + 1) * file.size / totalSteps
+              };
+
+              self.emit('uploadprogress', file, file.upload.progress, file.upload.bytesSent);
+              if (file.upload.progress == 100) {
+                file.status = Dropzone.SUCCESS;
+                self.emit("success", file, 'success', null);
+                self.emit("complete", file);
+                self.processQueue();
+              }
+            };
+          }(file, totalSteps, step), duration);
+        }
+      }
+    }*/
+}

@@ -1,0 +1,271 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body>
+	<div class="row">
+                            <div class="col-12">
+                                <div class="card-box table-responsive">
+                                    	<div class="col-xl-12">
+                                    	<ul id="tab_nav" class="nav nav-tabs">
+						                        <li id="tab_li_home" class="nav-item">
+						                            <a id="tab_a_home" href="#tab_content_home" data-toggle="tab" aria-expanded="false"
+						                               class="nav-link active">
+						                                		自由流定义
+						                            </a>
+						                        </li>
+						                    </ul>
+                                    <!-- Tab默认页 -->
+					       <div class="tab-content" id="tab-content">
+					          <div role="tabpanel" class="tab-pane fade active show" id="tab_content_home"> 
+                                    <div class="card m-b-20 card-body">
+	                                    <form class="form-inline">
+	                                              <div class="form-group mx-sm-3">
+	                                            <input type="text" class="form-control" id="task_name" placeholder="请输入任务名称">
+	                                        </div>
+	                                        <button class="btn btn-primary" id="query_btn">查询</button>
+	                                    </form>
+                               		</div>
+                               <div class="col-12 m-b-15">
+                               			<button id="add_btn" type="button" onclick="addDef()" class="btn btn-success btn-rounded w-md waves-effect waves-light m-r-15"  data-toggle="modal" data-target="#myModal"> 
+		                                 	<i class="fa fa-plus"></i> <span>增加</span> 
+		                                 </button>
+		                                 <button id="batch_del_btn" type="button" onclick="batchDelDef()" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-r-15"> 
+		                                 	<i class="mdi mdi-close"></i> <span id="del_model">批量删除</span> 
+		                                 </button>
+                               		</div>
+                                     <table id="datatable-buttons" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr>
+                                            <th><input type="checkbox" class="checkall"></th>
+                                            <th>ffDefUuid</th>
+                                            <th>操作</th>
+                                            <th>编码</th>
+                                            <th>名称</th>
+                                            <th>URL</th>
+                                            <th>用户选择器</th>
+                                            <th>环节处理器</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>  
+						               </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
+<div id="add_def_div">       
+  <div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" style="max-width:700px;margin:70px auto">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h4 class="modal-title" id="myModalLabel">增加</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              </div>
+              <div class="modal-body">
+                  <div class="card-box">
+                     <div class="row">
+                         <div class="col-12">
+                             <div class="p-20">
+                                 <form id="def_form" class="form-horizontal" role="form">
+                             		<input id="csrf_taken" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">编码</label>
+                                         <div class="col-10">
+                                             <input type="text" id="ffDefUuid" name="ffDefUuid" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">名称</label>
+                                         <div class="col-10">
+                                             <input type="text" id="name" name="name" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">处理地址</label>
+                                         <div class="col-10">
+                                             <input type="text" id="url" name="url" class="form-control" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">用户选择</label>
+                                         <div class="col-10">
+                                             <input type="text" id="subscriber"  name="subscriber" class="form-control" placeholder="请使用类名非完全限定名且第一个字母小写" >
+                                         </div>
+                                     </div>
+                                     <div class="form-group row">
+                                         <label class="col-2 col-form-label">环节处理</label>
+                                         <div class="col-10">
+                                             <input type="text" id="handler" name="handler"  class="form-control"  placeholder="同上">
+                                         </div>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+
+                     </div>
+                     <!-- end row -->
+                 </div>
+              </div>
+              <div class="modal-footer">
+                  <button id="close_btn" type="button" class="btn btn-default waves-effect" data-dismiss="modal">关闭</button>
+                  <button id="def_save_btn" type="button" class="btn btn-primary waves-effect waves-light">保存</button>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+</body>
+
+<script type="text/javascript">
+            $(document).ready(function() {  		
+                $("#query_btn").click(function(){
+                	table.draw();
+                	return false;//阻止默认的跳转行为
+         		});
+                var table = $('#datatable-buttons').DataTable({
+                    processing: true,
+                    serverSide: true,//服务器处理
+                    dom: Css.getDom(),
+                    language: Css.getLaguage(),
+                    ordering:false,
+                    ajax: {
+                        "url" :"/def/queryAll",
+                        "data": function( ffTaskUser ) {
+                        	ffTaskUser.name = $("#task_name").val();
+                        },
+                        "dataSrc": "data"
+                    },
+                    columns: [
+                        {
+                            "sClass": "text-center",
+                            "data": "ffDefUuid",
+                            "bSortable": false,
+                            "searchable": false,
+                            "render": function (data, type, row, meta) {
+                                return '<input type="checkbox" name="ffTaskUserCheck" class="checkchild"  value="' + data + '" />';
+                            }
+                        },
+                        {"data":"ffDefUuid","visible":false},
+                        {"data":  null},
+                        {"data": "ffDefUuid"},
+                        {"data": "name"},
+                        {"data": "url"},
+                        {"data": "subscriber"},
+                        {"data": "handler"}
+                    ],
+                    columnDefs: [
+                    	{
+                    		targets: [0,1,2],
+         					orderable: false
+         					
+         				},
+         				{
+         					defaultContent: '', targets: ['_all']
+         				},
+                        {
+                            targets: 2,
+                        	width: '20%',
+                            render: function (data, type, row, meta) {
+                              return data = '<button type="button" class="btn btn-danger btn-bordred waves-effect btn-trans m-r-5" onclick=delDef("'+row.ffDefUuid+'")>删除</button>' +
+                              '<button type="button" class="btn btn-success btn-bordred waves-effect btn-trans m-r-5" data-toggle="modal" data-target="#myModal" onclick=updDef("'+row.ffDefUuid+'")>更新</button>';
+                                return data;
+                            }
+                        }
+                    ]
+                })
+            	table.buttons().container().appendTo('#datatable-buttons_wrapper .col-md-6:eq(0)');
+            
+            	$(".checkall").click(function () {
+            	      var check = $(this).prop("checked");
+            	      $(".checkchild").prop("checked", check);
+            	});
+            	
+            	 $("#def_save_btn").click(function(){
+                 	var params = $("#def_form").toJSON();
+                 	Css.ajax("POST","/def/add",params,function(jsonStr){
+                 		if(jsonStr.state=="0") {
+ 	                    	$("#close_btn").trigger("click");//触发关闭事件
+     	                    table.draw();
+                 		} else {
+                 			alert("表单填写有误,重新填写!");
+                 		}
+                     });
+                 });
+             });
+            
+            function addDef() {
+				$("#ffDefUuid").val("");
+        		$("#name").val("");
+        		$("#url").val("");
+        		$("#subscriber").val("");
+        		$("#handler").val("");
+			}
+            
+            function updDef(ffDefUuid) {
+				Css.ajax("GET","/def/get",{"ffDefUuid":ffDefUuid},function(jsonStr){
+            		if(jsonStr.state=="0") {
+		        		$("#ffDefUuid").val(jsonStr.data.ffDefUuid);
+		        		$("#name").val(jsonStr.data.name);
+		        		$("#url").val(jsonStr.data.url);
+		        		$("#subscriber").val(jsonStr.data.subscriber);
+		        		$("#handler").val(jsonStr.data.handler);
+            		} else {
+            			alert("get失败");
+            		}
+                });
+			}
+            
+            function delDef(ffDefUuid) {
+				var delFlag=confirm("确认删除吗？")
+				var csrf_taken = $("#csrf_taken").val();
+				if(delFlag){
+					Css.ajax("POST","/def/del",{"_csrf":csrf_taken,"ids":ffDefUuid},function(jsonStr){
+	            		if(jsonStr.state=="0") {
+	            			$('#datatable-buttons').DataTable().draw();
+	            		} else {
+	            			alert("del失败!");
+	            		}
+	                });
+				}
+			}
+            //批量
+            function batchDelDef() {
+            	var checkednum = $(".checkchild:checked").length;
+            	console.log(checkednum);
+            	if(checkednum == 0) {
+            		alert("请至少选中一项!");
+            		return;
+            	}
+            	if(confirm("确定删除所有选中自由流？")) {
+            		var checkedArr = new Array();
+            		$(".checkchild:checked").each(function() {
+            			checkedArr.push($(this).val());
+            		});
+            		console.log(checkedArr.toString());
+            		var csrf_taken = $("#csrf_taken").val();
+            		Css.ajax("POST","/def/del",{"_csrf":csrf_taken,"ids":checkedArr.toString()},function(jsonStr){
+	            		if(jsonStr.state=="0") {
+	            			$('#datatable-buttons').DataTable().draw();
+	            		} else {
+	            			alert("批量删除失败!");
+	            		}
+	                });
+            	} 
+            }
+			
+        </script>
+		  <style>
+         
+         /* dataTables列内容居中 */  
+			.table>tbody>tr>td{  
+			        text-align:center;   
+			}  
+  
+		/* dataTables表头居中 */  
+		.table>thead:first-child>tr:first-child>th{  
+		        text-align:center;  
+		}  
+         </style>
+
+</html>

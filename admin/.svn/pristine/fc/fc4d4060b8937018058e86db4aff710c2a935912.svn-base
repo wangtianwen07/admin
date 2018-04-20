@@ -1,0 +1,26 @@
+/**
+ * Date:2018年1月17日
+ * Description:
+ * Author:QinMing
+ *
+ */
+package com.css.mgr.admin.srv.app;
+
+import java.util.List;
+
+import com.css.mgr.admin.dao.pojo.app.SApp;
+
+/**
+ * Date:2018年1月17日
+ * Description:
+ * Author:hjw
+ */
+public interface IAppService {
+	public int add();
+	
+	public int del(String id);
+	
+	public int update(String id);	
+    
+	List<SApp> getSAppList();
+}

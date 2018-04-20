@@ -1,0 +1,32 @@
+/**
+ * Date:2018年2月26日
+ * Description:
+ * Author:QinMing
+ *
+ */
+package com.css.mgr.bpm.freeflow.dao.pojo;
+
+/**
+ * Date:2018年2月26日
+ * Description:
+ * Author:QinMing
+ */
+public class CompletionStrategy {
+	/**
+	 * 任一一个处理，当前环节结束
+	 */
+	public static final String COMPLETION_STRATEGY_ANY="10";
+	/**
+	 * 所有串行处理，当前环节结束
+	 */
+	public static final String COMPLETION_STRATEGY_SERIAL="20";
+	/**
+	 * 所有并行处理，当前环节结束
+	 */
+	public static final String COMPLETION_STRATEGY_PARALLELL="30";
+	/**
+	 * 各自独立，互不干涉
+	 */
+	public static final String COMPLETION_STRATEGY_ALONE="40";
+
+}

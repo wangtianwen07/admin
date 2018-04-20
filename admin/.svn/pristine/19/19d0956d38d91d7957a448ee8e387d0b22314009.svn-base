@@ -1,0 +1,14 @@
+package com.css.mgr.admin.dao.repository;
+
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+
+import com.css.mgr.base.dao.pojo.SUserPost;
+
+public interface SUserPostDao extends JpaRepository<SUserPost, String>,JpaSpecificationExecutor<SUserPost>{
+	@Query("select postId from SUserPost where userId=?1")
+	public List<SUserPost> findSUserPostByUserId(String userId);
+}

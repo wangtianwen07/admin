@@ -1,0 +1,23 @@
+/**
+ * Date:2018年1月17日
+ * Description:
+ * Author:QinMing
+ *
+ */
+package com.css.mgr.admin.srv.app;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.css.mgr.admin.dao.pojo.app.SApp;
+
+/**
+ * Date:2018年1月23日
+ * Description:
+ * Author:hjw
+ */
+public interface IAppService {
+    //查询所有  
+    public Page<SApp> findAll(Pageable pageable);
+	
+	//分页查询
+	public Page<SApp> listSerach(SApp sapp,Pageable pageable);
+}

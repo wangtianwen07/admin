@@ -1,0 +1,68 @@
+/**
+ * Date:2018年1月18日
+ * Description:
+ * Author:QinMing
+ *
+ */
+package com.css.mgr.admin.ctrl;
+
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.css.mgr.admin.srv.org.ISOrgService;
+import com.css.mgr.base.CssController;
+import com.css.mgr.base.dao.pojo.MenuModel;
+import com.css.mgr.base.dao.pojo.SUser;
+
+/**
+ * Date:2018年1月18日
+ * Description:
+ * Author:QinMing
+ */
+@Controller
+public class MainController extends CssController{
+	@Autowired
+	private ISOrgService orgService;
+	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());  
+	@RequestMapping("/")
+	public String main(Model model){
+		//
+		List<MenuModel> menu=getMenu();
+		//
+		System.out.println(menu.size());
+		//
+		model.addAttribute("menu", menu);
+		//
+		setUserInfot(model);
+		//
+		return "index";
+	}
+	private void setUserInfot(Model model){
+		SUser user=getUser();
+		model.addAttribute("user", user);
+		//
+		model.addAttribute("org", orgService.find(user.getOrgId()));
+		//
+		logger.info(">>>>>>user:"+user.getRealName());
+	}
+	@RequestMapping("/first")
+	public String first(Model model){
+		//
+		setUserInfot(model);
+		//
+		return "first";
+	}
+	@RequestMapping("/htmltpl/{html}")
+	public String htmltpl(@PathVariable("html") String html){
+		//
+		return "htmltpl/"+html;
+	}
+}

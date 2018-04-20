@@ -1,0 +1,26 @@
+alter table s_post change column s_unit_uuid SUNIT_ID varchar(32);
+
+alter table s_func change column orde_rnum order_num varchar(32);
+
+INSERT INTO s_dict(sDict_id,code,NAME,table_Name) VALUES('6599f6bd7aa2c42d91995380367fda0a','d_root','字典管理','d_root');
+
+alter table ff_def add column code varchar(32);
+
+<!--附件表 -->
+DROP TABLE IF EXISTS `s_file`;
+CREATE TABLE `s_file` (
+  `UUID` varchar(32) NOT NULL,
+  `NAME` varchar(100) DEFAULT NULL,
+  `BID` varchar(32) DEFAULT NULL,
+  `FILE_BUSINESS_TYPE` varchar(50) DEFAULT NULL,
+  `URL` varchar(255) DEFAULT NULL,
+  `FILE_SIZE` decimal(11,0) DEFAULT NULL,
+  `READABLE_FILE_SIZE` varchar(32) DEFAULT NULL,
+  `EXT_NAME` varchar(32) DEFAULT NULL,
+  `UPLOAD_TIME` timestamp NULL DEFAULT NULL,
+  `USER_ID` varchar(32) DEFAULT NULL,
+  `USER_NAME` varchar(50) DEFAULT NULL,
+  `REMARK` varchar(500) DEFAULT NULL,
+  `MD5` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`UUID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

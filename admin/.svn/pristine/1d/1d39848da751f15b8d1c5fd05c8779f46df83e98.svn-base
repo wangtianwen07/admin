@@ -1,0 +1,237 @@
+package com.css.mgr.admin.ctrl.dict;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.internal.util.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.css.mgr.admin.common.IDUtil;
+import com.css.mgr.admin.srv.dict.IDictService;
+import com.css.mgr.base.CssController;
+import com.css.mgr.base.dao.pojo.SDict;
+import net.sf.json.JSONObject;
+
+@Controller
+@RequestMapping("/dict")
+public class DictController extends CssController{
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private IDictService dictService;
+	
+	@RequestMapping(value="/dir",method=RequestMethod.GET)
+	public String dir(Model model){
+		logger.info(">>>>>>user:"+getUser().getRealName());
+		String parentId=dictService.findAllByParentId(null).get(0).getUuid();
+		model.addAttribute("parentId", parentId);
+		return "admin/dict/dir";
+	}
+	
+	
+	
+	@RequestMapping(value="/get",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> get(String uuid){
+		logger.info("uuid:"+uuid);		 
+		Map<Object,Object> map =new HashMap<Object,Object>();
+		try {
+		 SDict sDict = dictService.getSdictById(uuid);
+		 map.put("code", sDict.getCode());
+		 map.put("name", sDict.getName());
+		 map.put("remark",sDict.getRemark());
+		 map.put("uuid", sDict.getUuid());
+		 map.put("parentId", sDict.getParentId());
+	    //map.put("sDict", sDict);
+    	map.put("success", "1");
+		  }catch (Exception e) {
+		map.put("error", "0");
+	   }
+		return map;
+	}
+	@RequestMapping(value="/getCode",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> getCode(String code,String parentId){
+		logger.info("code:"+code+"parentId:"+parentId); 
+		Map<Object,Object> map =new HashMap<Object,Object>();
+		SDict sdict = dictService.getSDictByCode(code);
+		SDict sdict1= dictService.getSdictById(parentId);
+		System.out.println(sdict1.getCode());
+		if(sdict!=null){
+			if(sdict.getTableName().equals(sdict1.getCode())){
+				map.put("error","0");
+				}else{
+					map.put("success","1");
+				}
+			}else{
+				map.put("success","1");
+			}
+		return map;
+	}
+		
+	
+	
+	
+	
+	@RequestMapping(value="/add",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<Object,Object> add(SDict sDict) {
+		SDict sdict = dictService.getSdictById(sDict.getParentId());
+		sDict.setTableName(sdict.getCode());
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		if(StringUtils.isEmpty(sDict.getUuid())) {
+			sDict.setUuid(IDUtil.getId());
+		}
+		try {
+			dictService.save(sDict);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value="/deletemore",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> delMore(String ids){ 
+		logger.info("ids:"+ids);
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		List list=IDUtil.strToList(ids);
+		try { 
+			  for (int i = 0; i < list.size(); i++) {
+				  System.out.println(list.get(i));
+				  dictService.deleByuuid((String)list.get(i));
+			}
+			map.put("success", "1");	
+			} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+	
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public Map<Object,Object> del(SDict sDict){
+		String uuid = sDict.getUuid();
+		logger.info("id:"+uuid);
+		Map<Object,Object> map = new HashMap<Object,Object>();
+		try {
+			dictService.deleByuuid(uuid);
+			map.put("success", "1");	
+		} catch (Exception e) {
+			map.put("success", "0");
+		}
+		return map;
+	}
+	
+  
+	
+	@RequestMapping(value="/queryAll",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> query(HttpServletRequest request) {
+		@SuppressWarnings("unused")
+		Set<String> keySet = request.getParameterMap().keySet();
+		Direction orderDir = Direction.ASC; 
+		String columnName = "uuid";
+		int draw = Integer.parseInt(request.getParameter("draw"));//请求次数
+		int start = Integer.parseInt(request.getParameter("start"));//数据起始位置
+		int length = Integer.parseInt(request.getParameter("length"));//数据长度
+		String order = request.getParameter("order[0][column]");//获取需要排序的字段索引
+		String dir = request.getParameter("order[0][dir]");//获取需要排序字段的排序方向
+		String column = request.getParameter("columns["+order+"][data]");//根据索引获取字段名称
+	    String searchValue = request.getParameter("search[value]");//获取用户过滤框里的字符
+	    String code = request.getParameter("code");
+	    String name = request.getParameter("name");
+	    String parentId=request.getParameter("parentId");
+		if(StringHelper.isEmpty(parentId)) {
+			parentId=dictService.findAllByParentId(null).get(0).getUuid();
+			logger.info(parentId);
+		}
+	    JSONObject paramJson = new JSONObject();
+	    paramJson.put("code", code);
+	    paramJson.put("name", name);
+	    paramJson.put("parentId", parentId);
+	    logger.info("paramJson:"+paramJson);
+	    if(IDUtil.isNotEmpty(dir) && !dir.equals("asc")) {
+			orderDir = Direction.DESC;
+		}
+		if(IDUtil.isNotEmpty(column)&& column != "") {
+			columnName = column;
+		}
+		 //总记录数
+	    String recordsTotal = "0";
+	    //过滤后记录数
+	    String recordsFiltered = "";
+	    int page = start / length;
+	    Sort sort = new Sort(orderDir, columnName);
+	    Pageable pageable = new PageRequest(page,length,sort);
+	    Page<SDict> dictPageFiltered = dictService.listSerach(paramJson,searchValue, pageable);
+	    
+		if(dictPageFiltered!=null && dictPageFiltered.getTotalElements()>0) {
+			logger.info(">>>>>>postPageFiltered:"+dictPageFiltered.getTotalElements());
+			recordsFiltered = String.valueOf(dictPageFiltered.getTotalElements());
+		}
+		Map<Object,Object> pageInfo = new HashMap<Object,Object>();
+		pageInfo.put("data", dictPageFiltered.getContent());
+		pageInfo.put("draw", draw);
+		pageInfo.put("recordsTotal", recordsTotal);
+		pageInfo.put("recordsFiltered", recordsFiltered);
+		return pageInfo;
+	}
+	
+	@RequestMapping(value="/queryDictChildren",method=RequestMethod.GET)
+	@ResponseBody
+	public Map<Object,Object> queryChild(HttpServletRequest request,String uuid) {
+		@SuppressWarnings("unused")
+		Set<String> keySet = request.getParameterMap().keySet();
+		Direction orderDir = Direction.ASC; 
+		String columnName = "uuid";
+		int draw = Integer.parseInt(request.getParameter("draw"));//请求次数
+		int start = Integer.parseInt(request.getParameter("start"));//数据起始位置
+		int length = Integer.parseInt(request.getParameter("length"));//数据长度
+		String order = request.getParameter("order[0][column]");//获取需要排序的字段索引
+		String dir = request.getParameter("order[0][dir]");//获取需要排序字段的排序方向
+		String column = request.getParameter("columns["+order+"][data]");//根据索引获取字段名称
+	    //String searchValue = request.getParameter("search[value]");//获取用户过滤框里的字符
+	    if(IDUtil.isNotEmpty(dir) && !dir.equals("asc")) {
+			orderDir = Direction.DESC;
+		}
+		if(column!=null && column != "") {
+			columnName = column;
+		}
+		 //总记录数
+	    String recordsTotal = "0";
+	    //过滤后记录数
+	    String recordsFiltered = "";
+	    int page = start / length;
+	    Sort sort = new Sort(orderDir, columnName);
+	    Pageable pageable = new PageRequest(page,length,sort);
+	    Page<SDict> dictPageFiltered = dictService.findSDictAll(uuid, pageable);
+	    
+		if(dictPageFiltered!=null && dictPageFiltered.getTotalElements()>0) {
+			logger.info(">>>>>>postPageFiltered:"+dictPageFiltered.getTotalElements());
+			recordsFiltered = String.valueOf(dictPageFiltered.getTotalElements());
+		}
+		Map<Object,Object> pageInfo = new HashMap<Object,Object>();
+		pageInfo.put("data", dictPageFiltered.getContent());
+		pageInfo.put("draw", draw);
+		pageInfo.put("recordsTotal", recordsTotal);
+		pageInfo.put("recordsFiltered", recordsFiltered);
+		return pageInfo;
+	}
+
+}

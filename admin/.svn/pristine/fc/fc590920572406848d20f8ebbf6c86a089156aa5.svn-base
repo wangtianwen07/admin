@@ -1,0 +1,219 @@
+package com.css.mgr.base.dao.pojo;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="S_ORG")
+public class SOrg
+  implements Serializable
+{
+  private static final long serialVersionUID = 1L;
+  public static final String ORG_TYPE_MGR = "1";
+  public static final String ORG_TYPE_BUS = "2";
+  public static final String ORG_TYPE_UNIT = "3";
+
+  @Id
+  @Column(name="SORG_ID")
+  private String uuid;
+
+  @Column(name="NAME")
+  private String name;
+
+  @Column(name="DEL_FLAG")
+  private String delFlag = DelFlag.UN_DELETE_STATE;
+
+  @Column(name="ORDER_NUM")
+  private Integer orderNum;
+
+  @Column(name="PARENT_ID")
+  private String parentId;
+
+  @Column(name="OPEN_FLAG")
+  private String openFlag = OpenFlag.OPEN;
+
+  @Column(name="remark")
+  private String remark;
+
+  @Column(name="ISSUE_DATE")
+  private Date issueDate;
+
+  @Column(name="ISSUE_ID")
+  private String issueId;
+
+  @Column(name="ISSUE_NAME")
+  private String issueName;
+
+  @Column(name="EDIT_DATE")
+  private Date editDate;
+
+  @Column(name="CODE")
+  private String code;
+
+  @Column(name="UNIT_CODE")
+  private String unitCode;
+
+  @Column(name="SUNIT_ID")
+  private String unitId;
+
+  @Column(name="UNIT_NAME")
+  private String unitName;
+
+  @Column(name="ORG_TYPE")
+  private String orgType = "1";
+
+  public SOrg()
+  {
+  }
+
+  public SOrg(String uuid, String name)
+  {
+    this.uuid = uuid;
+    this.name = name;
+  }
+
+  public String getUuid() {
+    return this.uuid;
+  }
+
+  public void setUuid(String uuid) {
+    this.uuid = uuid;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getParentId() {
+    return this.parentId;
+  }
+
+  public void setParentId(String parentId) {
+    this.parentId = parentId;
+  }
+
+  public Integer getOrderNum() {
+    return this.orderNum;
+  }
+
+  public void setOrderNum(Integer orderNum) {
+    this.orderNum = orderNum;
+  }
+
+  public String getDelFlag() {
+    return this.delFlag;
+  }
+
+  public void setDelFlag(String delFlag) {
+    this.delFlag = delFlag;
+  }
+
+  public String getOpenFlag() {
+    return this.openFlag;
+  }
+
+  public void setOpenFlag(String openFlag) {
+    this.openFlag = openFlag;
+  }
+
+  public String getRemark() {
+    return this.remark;
+  }
+
+  public void setRemark(String remark) {
+    this.remark = remark;
+  }
+
+  public Date getIssueDate() {
+    return this.issueDate;
+  }
+
+  public void setIssueDate(Date issueDate) {
+    this.issueDate = issueDate;
+  }
+
+  public String getIssueId() {
+    return this.issueId;
+  }
+
+  public void setIssueId(String issueId) {
+    this.issueId = issueId;
+  }
+
+  public String getIssueName() {
+    return this.issueName;
+  }
+
+  public void setIssueName(String issueName) {
+    this.issueName = issueName;
+  }
+
+  public Date getEditDate() {
+    return this.editDate;
+  }
+
+  public void setEditDate(Date editDate) {
+    this.editDate = editDate;
+  }
+
+  public String getUnitCode() {
+    return this.unitCode;
+  }
+
+  public void setUnitCode(String unitCode) {
+    this.unitCode = unitCode;
+  }
+
+  public String getCode() {
+    return this.code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
+  }
+
+  public String getOrgCode()
+  {
+    return this.code;
+  }
+
+  public String getOrgId() {
+    return this.uuid;
+  }
+
+  public String getOrgName() {
+    return this.name;
+  }
+
+  public String getUnitId() {
+    return this.unitId;
+  }
+
+  public void setUnitId(String unitId) {
+    this.unitId = unitId;
+  }
+
+  public String getOrgType() {
+    return this.orgType;
+  }
+
+  public void setOrgType(String orgType) {
+    this.orgType = orgType;
+  }
+
+  public String getUnitName() {
+    return this.unitName;
+  }
+
+  public void setUnitName(String unitName) {
+    this.unitName = unitName;
+  }
+}

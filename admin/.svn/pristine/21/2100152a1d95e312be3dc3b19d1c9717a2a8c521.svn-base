@@ -1,0 +1,32 @@
+/**
+ * Copyrigth(c) Css Team
+ * All rights reserved
+ */
+package com.css.mgr.admin.srv.func;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.css.mgr.base.dao.pojo.SFunc;
+
+import net.sf.json.JSONObject;
+
+/**
+ * @author wangtianwen
+ * 2018年1月30日
+ */
+public interface IFuncService {
+
+	 /**
+     * 获取树的HTML
+     * @return
+     */
+    public String getTreeHtml();	
+    
+    public Page<SFunc> findAll(JSONObject paramJson,Pageable pageable);
+	
+	//条件、分页查询
+	public Page<SFunc> listSerach(JSONObject paramJson,String searchValue,Pageable pageable);
+	
+	public SFunc save(SFunc sFunc);
+}

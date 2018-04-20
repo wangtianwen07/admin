@@ -1,0 +1,108 @@
+package com.css.mgr.admin.srv.user.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.css.mgr.admin.dao.repository.SPostDao;
+import com.css.mgr.admin.dao.repository.SUserDao;
+import com.css.mgr.admin.dao.repository.SUserOrgDao;
+import com.css.mgr.admin.dao.repository.SUserPostDao;
+import com.css.mgr.admin.srv.user.IUserService;
+import com.css.mgr.base.dao.pojo.SUser;
+import net.sf.json.JSONObject;
+
+/**
+ * Date:2018年1月31日
+ * Description:
+ * Author:Hjw
+ */
+@Service("userService")
+@Transactional
+public class UserServiceImpl implements IUserService {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    @Autowired
+    private SUserDao suserDao;
+    
+    @Autowired
+    SUserOrgDao sUserOrgDao;
+    
+    @Autowired
+    SUserPostDao sUserPostDao;
+    @Autowired
+    SPostDao sPostDao;
+
+    @Override
+    public Page<SUser> findAll(JSONObject paramJson, Pageable pageable) {
+
+        Page<SUser> page = suserDao.findAll(new Specification<SUser>() {
+            @Override
+            public Predicate toPredicate(Root<SUser> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                List<Predicate> list = new ArrayList<Predicate>();
+                if(StringUtils.isNotEmpty(paramJson.getString("realName"))) {
+                    list.add(cb.like(root.get("realName").as(String.class), "%" + paramJson.getString("realName") + "%"));
+                }
+                if(StringUtils.isNotEmpty(paramJson.getString("orgId"))) {
+                    list.add(cb.like(root.get("orgId").as(String.class), "%" + paramJson.getString("orgId") + "%"));
+                }
+                Predicate[] p = new Predicate[list.size()];
+                return cb.and(list.toArray(p));
+            }
+        },pageable);
+        if(page!=null) logger.info("findAll size:"+page.getTotalElements());
+        return page;
+    }
+
+    @Override
+    public Page<SUser> listSerach(JSONObject paramJson, String searchValue, Pageable pageable) {
+        Page<SUser> page = suserDao.findAll(new Specification<SUser>() {
+            @Override
+            public Predicate toPredicate(Root<SUser> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Predicate realName = cb.like(root.get("realName").as(String.class), "%" + paramJson.getString("realName") + "%");
+                Predicate orgId = cb.like(root.get("orgId").as(String.class), "%" + paramJson.getString("orgId") + "%");
+
+                List<Predicate> list = new ArrayList<Predicate>();
+
+                list.add(cb.like(root.get("loginName").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("realName").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("activeStatus").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("sex").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("issueName").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("openFlag").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("orderNum").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("secLevel").as(String.class), "%" + searchValue + "%"));
+                list.add(cb.like(root.get("orgId").as(String.class), "%" + searchValue + "%"));
+//                list.add(cb.like(root.get("gw").as(String.class), "%" + searchValue + "%"));
+                Predicate[] p = new Predicate[list.size()];
+
+                query.where(cb.and(realName,orgId,cb.or(list.toArray(p))));
+                return query.getRestriction();
+            }
+        },pageable);
+        if(page!=null) logger.info("postFilteredPage size:"+page.getTotalElements());
+        return page;
+    }
+
+	public Page<Object[]> findAllByOrgId(String orgId, Pageable pageable) {
+		Page<Object[]> userOrgPost = suserDao.findAllByOrgId(orgId,pageable);
+		logger.info(userOrgPost.toString());
+		return userOrgPost;
+	}
+
+	public void delById(String uuid) {
+		suserDao.delete(uuid);
+	}
+
+}

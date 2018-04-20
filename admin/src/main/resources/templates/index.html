@@ -1,0 +1,174 @@
+<!DOCTYPE HTML>
+<html  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" layout:decorator="template_layout_index">
+<body class="fixed-left">
+	<!--/*@thymesVar id="name" type="java.lang.String"*/-->
+	        <!-- Begin page -->
+        <div id="wrapper" layout:fragment="content">
+
+            <!-- Top Bar Start -->
+            <div class="topbar">
+
+                <!-- LOGO -->
+                <div class="topbar-left">
+                    <a href="/first" onclick="return Css.loadModel(this)" class="logo"><span>桌<span>面</span></span><i class="mdi mdi-layers"></i></a>
+                </div>
+                <!-- Button mobile view to collapse sidebar menu -->
+                <div class="navbar navbar-default" role="navigation">
+                    <div class="container-fluid">
+
+                        <!-- Page title -->
+                        <ul class="nav navbar-nav list-inline navbar-left">
+                            <li class="list-inline-item">
+                                <button class="button-menu-mobile open-left">
+                                    <i class="mdi mdi-menu"></i>
+                                </button>
+                            </li>
+                            <li class="list-inline-item">
+                                <h4 class="page-title" id="maintitle">深圳市中软创新信息系统有限公司</h4>
+                            </li>
+                        </ul>
+
+                        <nav class="navbar-custom">
+                            <ul class="list-unstyled topbar-right-menu float-right mb-0">
+                                <li>
+                                    <!-- Notification -->
+                                    <div class="notification-box">
+                                        <ul class="list-inline mb-0">
+                                            <li>
+                                                <a href="javascript:void(0);" class="right-bar-toggle">
+                                                    <i class="mdi mdi-bell-outline noti-icon"></i>
+                                                </a>
+                                                <div class="noti-dot">
+                                                    <span class="dot"></span>
+                                                    <span class="pulse"></span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <!-- End Notification bar --> 
+								 </li>
+                                <li class="hide-phone">
+                                    <form class="app-search">
+                                        <input type="text" placeholder="Search..."
+                                               class="form-control">
+                                        <button type="submit"><i class="fa fa-search"></i></button>
+                                    </form>
+                                </li>
+								
+                            </ul>
+                        </nav>
+                    </div><!-- end container -->
+                </div><!-- end navbar -->
+            </div>
+            <!-- Top Bar End -->
+                        <!-- ========== Left Sidebar Start ========== -->
+            <div class="left side-menu">
+                <div class="sidebar-inner slimscrollleft">
+
+                    <!-- User -->
+                    <div class="user-box">
+                        <div class="user-img">
+                            <img th:src="@{/css/adminto/images/users/avatar-1.jpg}" alt="user-img" th:title="${session.SPRING_SECURITY_CONTEXT.authentication.principal.username}" class="rounded-circle img-thumbnail img-responsive">
+                            <div class="user-status offline"><i class="mdi mdi-adjust"></i></div>
+                        </div>
+                        <h5><a href="#"><span th:text="${user.realName}"></span></a> </h5>
+                        <ul class="list-inline">
+                            <li class="list-inline-item">
+                                <a href="#" >
+                                    <i class="mdi mdi-settings"></i>
+                                </a>
+                            </li>
+
+                            <li class="list-inline-item">
+                                <form action="/logout" method="post" id="logout">
+									<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+								</form>
+                                <a href="#" class="text-custom" onclick="Css.logout()">
+                                    <i class="mdi mdi-power"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- End User -->
+
+                    <!--- Sidemenu -->
+                    <div id="sidebar-menu">
+                        <ul>
+                        	<li class="text-muted menu-title">导航菜单</li>
+
+                            <!-- li>
+                                <a href="/first" onclick="return Css.loadModel(this)" class="waves-effect"><i class="mdi mdi-view-dashboard"></i> <span> 首页 </span> </a>
+                            </li-->
+                        </ul>
+						<ul th:each="m,mStat : ${menu}">
+					       <li class="has_sub" th:if="${m.hasChild()}">
+                               <a href="javascript:void(0);" class="waves-effect"><i th:class="${m.getIcon()}"></i> <span th:text="${m.getName()}"></span> <span class="badge badge-warning pull-right" th:text="${m.childs.size()}"></span></a>
+                               <ul class="list-unstyled">
+                                   <li th:each="mm,mmStat : ${m.childs}"><a th:href="${mm.getUrl()}"  onclick="return Css.loadModel(this)" th:text="${mm.getName()}"></a></li>
+                               </ul>
+                           </li>
+					    	<li th:if="${!m.hasChild()}">
+                                <a th:href="${m.getUrl()}" onclick="return Css.loadModel(this)" class="waves-effect"><i th:class="${m.getIcon()}"></i> <span th:text="${m.getName()}"></span> </a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <!-- Sidebar -->
+                    <div class="clearfix"></div>
+
+                </div>
+
+            </div>
+            <!-- Left Sidebar End -->
+            <!-- ============================================================== -->
+            <!-- Start right Content here -->
+            <!-- ============================================================== -->
+            <div class="content-page">
+                <!-- Start content -->
+                <div class="content">
+                    <div class="container-fluid" id="maincontent">
+
+
+                    </div> <!-- container -->
+
+                </div> <!-- content -->
+
+                <footer class="footer text-right">
+                    2016 - 2018 © 深圳市中软创新信息系统有限公司 | www.csscis.com
+                </footer>
+
+            </div>
+             <!-- ============================================================== -->
+            <!-- End Right content here -->
+            <!-- ============================================================== -->
+
+
+            <!-- Right Sidebar -->
+            <div class="side-bar right-bar">
+                <a href="javascript:void(0);" class="right-bar-toggle">
+                    <i class="mdi mdi-close-circle-outline"></i>
+                </a>
+                <h4 class="">消息推送</h4>
+                <div class="notification-list nicescroll">
+                    <ul class="list-group list-no-border user-list">
+                        <li class="list-group-item" th:each="msg,msgStat : ${sMsg}">
+                            <a href="#" class="user-list-item" onclick="Css.sweetMsg(this)"  th:title="${msg.getTitle()}" th:content="${msg.getContent()}" th:value="${_csrf.token}" th:name="${msg.getUuid()}">
+                                <div class="icon bg-pink">
+                                    <i class="mdi mdi-comment"></i>
+                                </div>
+                                <div class="user-desc">
+                                    <span class="name" th:text="${msg.getTitle()}"></span>
+                                    <span class="desc" th:text="${msg.getContent()}"></span>
+                                    <span class="time" th:text="${msg.getCreateTime()}"></span>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- /Right-bar -->
+
+        </div>
+        <!-- END wrapper -->
+</body>
+</html>
